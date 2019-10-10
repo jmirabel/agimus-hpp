@@ -24,7 +24,6 @@ INCLUDE(cmake/python.cmake)
 SET(PROJECT_NAME agimus_hpp)
 SET(PROJECT_DESCRIPTION "Package to link HPP to the Agimus framework")
 SET(PROJECT_URL "")
-SET(PROJECT_VERSION "")
 
 SETUP_PROJECT()
 FINDPYTHON(2.7 REQUIRED EXACT)

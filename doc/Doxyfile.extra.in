@@ -2,6 +2,7 @@
 INCLUDE_PATH           =
 
 INPUT                  = @PROJECT_SOURCE_DIR@/src/agimus_hpp \
+                         @PROJECT_SOURCE_DIR@/scripts/ \
                          @PROJECT_SOURCE_DIR@/doc/
 FILE_PATTERNS          = *.py *.hh
 
