@@ -3,26 +3,14 @@ import rospy, hpp.corbaserver
 import ros_tools
 from tf import TransformListener
 from .client import HppClient
-from .trajectory_publisher import JointPathCommandPublisher
 from dynamic_graph_bridge_msgs.msg import Vector
 from agimus_sot_msgs.msg import ProblemSolved, PlanningGoal
-from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 from sensor_msgs.msg import JointState
 from std_msgs.msg import String, Empty, Bool
 from math import cos, sin
 from threading import Lock
 from omniORB import CORBA
 import traceback
-
-def _fillVector(input, segments):
-    """ Returns a vector that contains the segments extracted from input """
-    output = []
-    for s in segments:
-        output.extend (input[s[0]:s[0]+s[1]])
-    return output
-
-def init_node ():
-    rospy.init_node('planning_request_adapter')
 
 def _setGaussianShooter (hpp, q, dev):
     hpp.robot.setCurrentConfig (q)
@@ -127,11 +115,6 @@ class PlanningRequestAdapter(HppClient):
             rospy.loginfo("Path ({}) to reach target found in {} seconds".format(pid, t))
             rospy.sleep(0.1)
             self.publishers["motion_planning"]["problem_solved"].publish (ProblemSolved(True, "success", pid))
-            if rospy.get_param("/hpp/publish_path", True):
-                topic = rospy.get_param("/hpp/topic_robot_controller", "joint_path_command")
-                rospy.loginfo("Publish path to " + str(topic))
-                jpc = JointPathCommandPublisher(topic = topic)
-                jpc.publish(pid)
         except Exception as e:
             rospy.loginfo (str(e))
             rospy.loginfo (traceback.format_exc())

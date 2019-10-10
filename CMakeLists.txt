@@ -34,7 +34,6 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   agimus_sot_msgs
   std_msgs
-  trajectory_msgs
   rospy
   )
 

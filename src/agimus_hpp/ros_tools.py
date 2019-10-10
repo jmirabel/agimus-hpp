@@ -3,7 +3,7 @@ import rospy
 ## Wait indefinitely for a service, return a ServiceProxy if found and a type has been provided
 ## \param srv the service name
 ## \param service_type of the service
-## \param timeout until a warning is printed using rospy.logwarn
+## \param time after which a warning is printed using rospy.logwarn
 ## \return a proxy to the service if service_type is given
 def wait_for_service(srv, service_type = None, time=0.2):
     try:
@@ -36,10 +36,11 @@ def _createTopics (object, namespace, topics, subscribe):
         else:
             return rospy.Publisher(namespace, topics[0], queue_size = topics[1])
 
-## Create subscribers.
+## Create rospy.Subscriber.
 ## \param object the object containing the callbacks.
 ## \param namespace prefix for the topic names
-## \param topics a dictionary whose keys are topic names and values are a list [ Type, name_of_callback_in_object ].
+## \param topics a dictionary whose keys are topic names and values are a list <tt>[ Type, name_of_callback_in_object ]</tt>.
+## \return a hierarchy of dictionary having the same layout as \c topics and whose leaves are rospy.Subscriber object.
 ##
 ## For instance:
 ## \code
@@ -52,11 +53,13 @@ def _createTopics (object, namespace, topics, subscribe):
 def createSubscribers (object, namespace, topics):
     return _createTopics (object, namespace, topics, True)
 
-## Create publishers.
-## See \ref createSubscribers for a description of the parameters
+## Create rospy.Publisher.
 ##
-## \param namespace prefix for the topic names
-## \param topics a dictionary whose keys are topic names and values are a list [ Type, queue_size ].
+## \param namespace prefix for the topics names
+## \param topics a dictionary whose keys are topic names and values are a list <tt>[ Type, queue_size ]</tt>.
+## \return a hierarchy of dictionary having the same layout as \c topics and whose leaves are rospy.Publisher object.
+##
+## \sa createSubscribers
 def createPublishers (namespace, topics):
     return _createTopics (None, namespace, topics, False)
 
@@ -80,13 +83,20 @@ def _createServices (object, namespace, services, serve):
             return wait_for_service(namespace, services[0])
 
 ## Create rospy.Service.
-## See \ref createSubscribers for a description of the parameters
-## \param services a dictionary whose keys are topic names and values are a list [ Type, name_of_callback_in_object ].
+##
+## \param object the object containing the callbacks.
+## \param namespace prefix for the services names
+## \param services a dictionary whose keys are topic names and values are a list <tt>[ Type, name_of_callback_in_object ]</tt>.
+## \return a hierarchy of dictionary having the same layout as \c topics and whose leaves are rospy.Service object.
+## \sa createSubscribers
 def createServices (object, namespace, services):
     return _createServices (object, namespace, services, True)
 
 ## Create rospy.ServiceProxy.
-## See \ref createSubscribers for a description of the parameters
-## \param services a dictionary whose keys are topic names and values are a list [ Type, ].
+##
+## \param namespace prefix for the services names
+## \param services a dictionary whose keys are topic names and values are a list <tt>[ Type, ]</tt>.
+## \return a hierarchy of dictionary having the same layout as \c topics and whose leaves are rospy.ServiceProxy object.
+## \sa createSubscribers
 def createServiceProxies (namespace, services):
     return _createServices (None, namespace, services, False)

@@ -6,101 +6,11 @@ from agimus_sot_msgs.msg import *
 from agimus_sot_msgs.srv import *
 import ros_tools
 from .tools import *
-from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
-from sensor_msgs.msg import JointState
 import Queue
-from collections import deque
 from dynamic_graph_bridge_msgs.msg import Vector
-from geometry_msgs.msg import Vector3, Quaternion, Transform
+from geometry_msgs.msg import Vector3, Transform
 from std_msgs.msg import UInt32, Empty
 import std_srvs.srv
-
-def _fillVector(input, segments):
-    """ Returns a vector that contains the segments extracted from input """
-    output = []
-    for s in segments:
-        output.extend (input[s[0]:s[0]+s[1]])
-    return output
-
-def init_node ():
-    rospy.init_node('joint_path_command_publisher')
-
-
-## Unused class
-## \todo This class can probably be removed. I (Joseph Mirabel) implemented it at first
-## to be compliant with JointPathCommand. The use case was UR5.
-class JointPathCommandPublisher:
-    def __init__ (self, topic = 'joint_path_command', hasVelocity = False, client = hpp.corbaserver.Client()):
-        self.hpp = client
-        self.pub = rospy.Publisher(topic, JointTrajectory, queue_size=10)
-        self.solved = None
-        self.msg = JointTrajectory()
-        self.msg.header.frame_id = ""
-        self.hasVelocity = hasVelocity
-        self.setJointNames(self.hpp.robot.getJointNames())
-
-    def setJointNames (self, jointNames):
-        self.msg.joint_names = jointNames
-        self.configSegments = list()
-        self.velocitySegments = list()
-        rkCfg = rkVel = 0
-        for jn in jointNames:
-            szCfg = self.hpp.robot.getJointConfigSize (jn)
-            szVel = self.hpp.robot.getJointNumberDof (jn)
-            self.configSegments   += [[rkCfg, szCfg ]]
-            self.velocitySegments += [[rkVel, szVel ]]
-            rkCfg += szCfg
-            rkVel += szVel
-
-    def _makeTrajectoryPoint(self, pathId, t, pointTime, pointId):
-        q = self.hpp.problem.configAtParam(pathId, t)
-        self.msg.points[pointId].positions = _fillVector (q, self.configSegments)
-        if self.hasVelocity:
-            v = self.hpp.problem.derivativeAtParam (pathId, 1, t)
-            self.msg.points[pointId].velocities = _fillVector (v, self.velocitySegments)
-        self.msg.points[pointId].time_from_start = rospy.Duration(pointTime)
-
-    def publish(self, pathId, dt = 0.05, scale = 1):
-        """
-        dt: time between samples of the path in HPP
-        scale: ratio (time between ROS points) / dt
-        """
-        self.msg.points = []
-        pathLength = self.hpp.problem.pathLength(pathId)
-        t = 0.
-        last = False
-        while True:
-            self.msg.points.append(JointTrajectoryPoint())
-            self._makeTrajectoryPoint (pathId, t, scale * t, len(self.msg.points)-1)
-            if last: break
-            t += dt
-            if t > pathLength:
-                t = pathLength
-                last = True
-        self.msg.header.stamp = rospy.Time.now()
-        self.pub.publish(self.msg)
-        self.msg.header.seq += 1
-
-    def solve(self, goal, wait = True):
-        if wait:
-            self.solved = None
-        elif self.solved is None:
-            self.solved = rospy.Subscriber('/motion_planning/problem_solved', ProblemSolved, self._solved)
-        solve = rospy.Publisher('/motion_planning/request', JointState, latch=True, queue_size=1)
-        js = JointState(name = self.msg.joint_names, position = goal)
-        solve.publish(js)
-        if wait:
-            msg = rospy.wait_for_message ('/motion_planning/problem_solved', ProblemSolved)
-            if msg.success:
-                self.publish(msg.path_id)
-            else:
-                print "Failed:", msg.msg
-
-    def _solved(self, msg):
-        if msg.success:
-            print "Solved", msg.path_id
-        else:
-            print "Failed:", msg.msg
 
 ## Samples and publishes a path from HPP into several topics
 ##
@@ -110,9 +20,6 @@ class JointPathCommandPublisher:
 ## \li joint position and velocity (requested via a service),
 ## \li link position and velocity (requested via a service),
 ## \li frame position and velocity (requested via a service).
-##
-## \todo This class can probably be removed. I (Joseph Mirabel) implemented it at first
-## to be compliant with JointPathCommand. The use case was UR5.
 class HppOutputQueue(HppClient):
     ## Subscribed topics
     subscribersDict = {
