@@ -26,7 +26,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-## \package hpp_node.py
+## \file hpp_node.py
 #
 # This file starts a ROS node that retrieves paths planned by hppcorbaserver.
 #
