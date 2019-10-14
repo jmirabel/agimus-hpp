@@ -20,17 +20,17 @@ class HppClient(object):
         self._connect()
 
     def _connect(self):
-        self.hpp = hpp.corbaserver.Client(context = self.context)
+        self._hppclient = hpp.corbaserver.Client(context = self.context)
         self.hpp_tools = hpp.corbaserver.tools.Tools ()
         try:
             cl = hpp.corbaserver.manipulation.robot.CorbaClient (context = self.context)
-            self.manip = cl.manipulation
+            self._manipclient = cl.manipulation
             self.robot = hpp.corbaserver.manipulation.robot.Robot (client = cl)
             self.problemSolver = hpp.corbaserver.manipulation.ProblemSolver(self.robot)
         except Exception, e:
             rospy.logwarn("Could not connect to manipulation server: " + str(e))
-            if hasattr(self, "manip"): delattr(self, "manip")
-            self.robot = hpp.corbaserver.robot.Robot(client = self.hpp)
+            if hasattr(self, "_manipclient"): delattr(self, "_manipclient")
+            self.robot = hpp.corbaserver.robot.Robot(client = self._hppclient)
             self.problemSolver = hpp.corbaserver.ProblemSolver(self.robot)
         rospy.loginfo("Connected to hpp")
 
@@ -39,30 +39,30 @@ class HppClient(object):
     ## \todo rename me
     def _hpp (self, reconnect = True):
         try:
-            self.hpp.problem.getAvailable("type")
+            self._hppclient.problem.getAvailable("type")
         except (CORBA.TRANSIENT, CORBA.COMM_FAILURE) as e:
             if reconnect:
                 rospy.loginfo ("Connection with HPP lost. Trying to reconnect.")
                 self._connect()
                 return self._hpp(False)
             else: raise e
-        return self.hpp
+        return self._hppclient
 
     ## Get the hppcorbaserver manipulation client.
     ## It handles reconnection if needed.
     ## \todo rename me
     def _manip (self, reconnect = True):
-        if not hasattr(self, "manip"):
+        if not hasattr(self, "_manipclient"):
             raise Exception("No manip client")
         try:
-            self.manip.problem.getAvailable("type")
+            self._manipclient.problem.getAvailable("type")
         except (CORBA.TRANSIENT, CORBA.COMM_FAILURE) as e:
             if reconnect:
                 rospy.loginfo ("Connection with HPP lost. Trying to reconnect.")
                 self._connect()
                 return self._manip(False)
             else: raise e
-        return self.manip
+        return self._manipclient
 
     ## \deprecated
     def _createTopics (self, namespace, topics, subscribe):
