@@ -34,24 +34,30 @@ class HppClient(object):
             self.problemSolver = hpp.corbaserver.ProblemSolver(self.robot)
         rospy.loginfo("Connected to hpp")
 
+    ## \deprecated Use HppClient.hpp instead.
+    def _hpp (self, reconnect = True):
+        return self.hpp (reconnect)
+
     ## Get the hppcorbaserver client.
     ## It handles reconnection if needed.
-    ## \todo rename me
-    def _hpp (self, reconnect = True):
+    def hpp (self, reconnect = True):
         try:
             self._hppclient.problem.getAvailable("type")
         except (CORBA.TRANSIENT, CORBA.COMM_FAILURE) as e:
             if reconnect:
                 rospy.loginfo ("Connection with HPP lost. Trying to reconnect.")
                 self._connect()
-                return self._hpp(False)
+                return self.hpp(False)
             else: raise e
         return self._hppclient
 
+    ## \deprecated Use HppClient.hpp instead.
+    def _manip (self, reconnect = True):
+        return self.manip (reconnect)
+
     ## Get the hppcorbaserver manipulation client.
     ## It handles reconnection if needed.
-    ## \todo rename me
-    def _manip (self, reconnect = True):
+    def manip (self, reconnect = True):
         if not hasattr(self, "_manipclient"):
             raise Exception("No manip client")
         try:
@@ -60,27 +66,6 @@ class HppClient(object):
             if reconnect:
                 rospy.loginfo ("Connection with HPP lost. Trying to reconnect.")
                 self._connect()
-                return self._manip(False)
+                return self.manip(False)
             else: raise e
         return self._manipclient
-
-    ## \deprecated
-    def _createTopics (self, namespace, topics, subscribe):
-        """
-        \param subscribe boolean whether this node should subscribe to the topics.
-                                 If False, this node publishes to the topics.
-        """
-        if subscribe:
-            return ros_tools.createSubscribers (self, namespace, topics)
-        else:
-            return ros_tools.createPublishers (namespace, topics)
-
-    ## \deprecated
-    def _createServices (self, namespace, services, serve):
-        """
-        \param serve boolean whether this node should serve or use the topics.
-        """
-        if serve:
-            return ros_tools.createServices (self, namespace, services)
-        else:
-            return ros_tools.createServiceProxies (namespace, services)
