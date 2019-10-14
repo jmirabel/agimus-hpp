@@ -294,10 +294,11 @@ class HppOutputQueue(HppClient):
         rospy.logerr ("Link velocity cannot be obtained from HPP")
         return Vector()
 
-    def readAt (self, pathId, time, timeShift = 0):
+    def readAt (self, path, time, timeShift = 0):
         hpp = self._hpp()
-        hpp.robot.setCurrentConfig( hpp.problem.configAtParam (pathId, time))
-        hpp.robot.setCurrentVelocity( hpp.problem.derivativeAtParam (pathId, 1, time))
+        qt, success = path.call(time)
+        hpp.robot.setCurrentConfig( qt )
+        hpp.robot.setCurrentVelocity( path.derivative (time, 1))
         msgs = []
         for topic in self.topics:
             msgs.append (topic.read(hpp))
@@ -320,9 +321,12 @@ class HppOutputQueue(HppClient):
         times[-1] = L
         times += start
         self.firstMsgs = None
+        hpp = self._hpp()
+        path = hpp.problem.getPath(pathId)
         for t in times:
-            msgs = self.readAt(pathId, t, timeShift = start)
+            msgs = self.readAt(path, t, timeShift = start)
             if self.firstMsgs is None: self.firstMsgs = msgs
+        self.hpp_tools.deleteServantFromObject (path)
         self.pubs["read_path_done"].publish(UInt32(pathId))
         rospy.loginfo("Finish reading path {}".format(pathId))
         self.reading = False

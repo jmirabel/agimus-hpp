@@ -1,5 +1,6 @@
 import rospy, CORBA
 import hpp.corbaserver
+import hpp.corbaserver.tools
 import hpp.corbaserver.robot
 import hpp.corbaserver.manipulation
 import hpp.corbaserver.manipulation.robot
@@ -20,6 +21,7 @@ class HppClient(object):
 
     def _connect(self):
         self.hpp = hpp.corbaserver.Client(context = self.context)
+        self.hpp_tools = hpp.corbaserver.tools.Tools ()
         try:
             cl = hpp.corbaserver.manipulation.robot.CorbaClient (context = self.context)
             self.manip = cl.manipulation
