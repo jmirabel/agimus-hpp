@@ -18,7 +18,16 @@ def _setGaussianShooter (hpp, q, dev):
             CORBA.Any(CORBA.TC_double, dev))
     hpp.problem.selectConfigurationShooter ("Gaussian")
 
-## \todo document me.
+## Class that handles ROS motion planning requests and forward them to HPP.
+#
+# This class takes care of:
+# - setting the initial configuration of the planning problem
+#   according to a policy. See PlanningRequestAdapter.modes.
+# - request the resolution of a planning problem.
+#
+# This class *does not* take care of:
+# - initializing the problem (loading the robot, the environment,)
+# - defining the goal.
 class PlanningRequestAdapter(HppClient):
     subscribersDict = {
             "motion_planning": {
@@ -35,6 +44,13 @@ class PlanningRequestAdapter(HppClient):
                 "problem_solved" : [ ProblemSolved, 1],
                 },
             }
+    ## Mode to set the initial configuration of the planning problem.
+    # There are three modes:
+    # - \c current: The current robot configuration, acquired from the PlanningRequestAdapter.topicStateFeedback.
+    #               The base pose is computed using tf and ROS parameter
+    #               \c /motion_planning/tf/world_frame_name
+    # - \c estimated: The robot configuration, acquired from the PlanningRequestAdapter.topicEstimation
+    # - \c uesr_defined: The value passed with topic \c /motion_planning/param/set_init_pose
     modes = [ "current", "estimated", "user_defined" ]
 
     def __init__ (self, topicStateFeedback):
