@@ -20,6 +20,8 @@ import std_srvs.srv
 ## \li joint position and velocity (requested via a service),
 ## \li link position and velocity (requested via a service),
 ## \li frame position and velocity (requested via a service).
+##
+## Connection with HPP is handle throw agimus_hpp.client.HppClient.
 class HppOutputQueue(HppClient):
     ## Subscribed topics
     subscribersDict = {

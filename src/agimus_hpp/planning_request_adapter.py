@@ -28,6 +28,8 @@ def _setGaussianShooter (hpp, q, dev):
 # This class *does not* take care of:
 # - initializing the problem (loading the robot, the environment,)
 # - defining the goal.
+#
+# Connection with HPP is handle throw agimus_hpp.client.HppClient.
 class PlanningRequestAdapter(HppClient):
     subscribersDict = {
             "motion_planning": {
