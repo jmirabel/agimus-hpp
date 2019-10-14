@@ -87,7 +87,8 @@ class HppOutputQueue(HppClient):
         super(HppOutputQueue, self).__init__ ()
 
         ## Publication frequency
-        self.frequency = 1. / rospy.get_param ("/sot_controller/dt") # Hz
+        self.dt = rospy.get_param ("/sot_controller/dt")
+        self.frequency = 1. / self.dt # Hz
         ## Queue size should be adapted according to the queue size in SoT
         self.queue_size = 1024
         self.queue = Queue.Queue (self.queue_size)
@@ -294,11 +295,32 @@ class HppOutputQueue(HppClient):
         rospy.logerr ("Link velocity cannot be obtained from HPP")
         return Vector()
 
+    ## Compute the configuration and velocity of the robot along \c path
+    #  at time \c time.
+    # \param path the path,
+    # \param time along the path,
+    # \param timeShift unused. I forgot the meaning.
+    # \note The derivatives are computed using \f$ \frac{q(t+dt) - q(t)}{dt} \f$
+    # \todo At the moment, HPP does not return the correct path derivatives because
+    #       class StraightPath uses hpp::pinocchio::RnxSOnLieGroupMap and not
+    #       hpp::pinocchio::DefaultLieGroupMap.
     def readAt (self, path, time, timeShift = 0):
         hpp = self._hpp()
         qt, success = path.call(time)
         hpp.robot.setCurrentConfig( qt )
-        hpp.robot.setCurrentVelocity( path.derivative (time, 1))
+        #hpp.robot.setCurrentVelocity( path.derivative (time, 1))
+        device = hpp.problem.getProblem().robot()
+        if time+self.dt > path.length():
+            qt_dt, success = path.call (path.length())
+            dt = path.length() - time
+            if dt == 0:
+                vel = [ 0., ] * hpp.robot.getNumberDof()
+            else:
+                vel = [ v/dt for v in device.difference (qt_dt, qt) ]
+        else:
+            qt_dt, success = path.call (time+self.dt)
+            vel = [ v/self.dt for v in device.difference (qt_dt, qt) ]
+        hpp.robot.setCurrentVelocity( vel )
         msgs = []
         for topic in self.topics:
             msgs.append (topic.read(hpp))
