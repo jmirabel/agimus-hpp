@@ -34,7 +34,7 @@ class PlanningRequestAdapter (Parent):
 
     def _set_init_pose (self, msg):
         self.q_init = self.get_object_root_joints()
-        # TODO: WHEN NEEDED Get the joint states of the objects.
+        # TODO: WHEN NEEDED Get the joint states of the objects.
 
     def get_object_root_joints(self):
         world_frame = rospy.get_param ("/motion_planning/tf/world_frame_name")

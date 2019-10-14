@@ -2,7 +2,6 @@ SET (PYTHON_FILE
     estimation.py
     trajectory_publisher.py
     planning_request_adapter.py
-    hpp_server_initializer.py
     client.py
     ros_tools.py
     tools.py
@@ -13,7 +12,6 @@ FOREACH(F ${PYTHON_FILE})
 ENDFOREACH()
 
 SET (PYTHON_FILE
-    hpp_server_initializer.py
     planning_request_adapter.py
     __init__.py)
 

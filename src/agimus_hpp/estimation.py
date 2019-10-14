@@ -231,7 +231,7 @@ class Estimation(HppClient):
                     qjoint = [cos(q), sin(q)]
                 else:
                     assert hpp.robot.getJointConfigSize(name) == 1, name + " is not of size 1"
-                    # Check joint bounds
+                    # Check joint bounds
                     bounds = hpp.robot.getJointBounds(name)
                     if q-bounds[0] < -1e-3 or q-bounds[1] > 1e-3:
                         rospy.logwarn_throttle(1, "Current state {1} of joint {0} out of bounds {2}"
