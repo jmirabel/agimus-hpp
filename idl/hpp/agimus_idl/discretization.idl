@@ -1,0 +1,50 @@
+// Copyright (C) 2019 by Joseph Mirabel, LAAS-CNRS.
+//
+// This file is part of the agimus-hpp
+//
+// This software is provided "as is" without warranty of any kind,
+// either expressed or implied, including but not limited to the
+// implied warranties of fitness for a particular purpose.
+//
+// See the COPYING file for more information.
+
+#ifndef HPP_AGIMUS_IDL_DISCRETIZATION_IDL
+#define HPP_AGIMUS_IDL_DISCRETIZATION_IDL
+#include <hpp/common.idl>
+#include <hpp/pinocchio_idl/robots.idl>
+#include <hpp/core_idl/paths.idl>
+
+module hpp
+{
+  module pinocchio_idl
+  {
+    interface CenterOfMassComputation;
+  }; // module pinocchio_idl
+
+  module core_idl {
+    interface Path;
+  }; // module core
+
+  module agimus_idl
+  {
+    interface Discretization
+    {
+      const long Position              = 1;
+      const long Derivative            = 2;
+      const long PositionAndDerivative = 3;
+      void    compute (in value_type time) raises (Error);
+      boolean addCenterOfMass (in pinocchio_idl::CenterOfMassComputation time, in long option) raises (Error);
+      boolean addOperationalFrame (in string name, in long option) raises (Error);
+      void    setJointNames (in Names_t names) raises (Error);
+      void    setPath (in core_idl::Path p) raises (Error);
+      //-> path
+    }; // interface Discretization
+
+  }; // module hpp
+}; // module agimus
+//* #include <hpp/core/path.hh>
+//* #include <hpp/core/path-vector.hh>
+//* #include "../src/discretization.hh"
+//* #include <hpp/core_idl/paths-idl.hh>
+
+#endif // HPP_AGIMUS_IDL_DISCRETIZATION_IDL

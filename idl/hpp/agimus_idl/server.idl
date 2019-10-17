@@ -1,0 +1,33 @@
+// Copyright (C) 2019 by Joseph Mirabel, LAAS-CNRS.
+//
+// This file is part of the agimus-hpp
+//
+// This software is provided "as is" without warranty of any kind,
+// either expressed or implied, including but not limited to the
+// implied warranties of fitness for a particular purpose.
+//
+// See the COPYING file for more information.
+
+#ifndef HPP_AGIMUS_IDL_SERVER_IDL
+#define HPP_AGIMUS_IDL_SERVER_IDL
+#include <hpp/common.idl>
+#include <hpp/agimus_idl/discretization.idl>
+
+module hpp
+{
+  module agimus_idl
+  {
+    interface Server
+    {
+      Discretization getDiscretization () raises (Error);
+    }; // interface Server
+
+  }; // module agimus
+}; // module hpp
+
+//* #include "../src/discretization.hh"
+//* #include <hpp/agimus_idl/discretization-idl.hh>
+
+#include <hpp/agimus_idl/discretization.idl>
+
+#endif // HPP_AGIMUS_IDL_SERVER_IDL
