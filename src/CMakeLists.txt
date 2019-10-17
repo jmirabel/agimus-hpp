@@ -32,9 +32,13 @@ INSTALL(DIRECTORY ${CMAKE_SOURCE_DIR}/idl/hpp/agimus_idl
   DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/idl/hpp)
 
 INSTALL(
-  DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/hpp_idl ${CMAKE_CURRENT_BINARY_DIR}/hpp_stubs
-  DESTINATION ${PYTHON_SITELIB}
-  )
+  DIRECTORY
+  ${CMAKE_CURRENT_BINARY_DIR}/hpp_idl/hpp/agimus_idl
+  DESTINATION ${PYTHON_SITELIB}/hpp_idl/hpp/)
+INSTALL(
+  DIRECTORY
+  ${CMAKE_CURRENT_BINARY_DIR}/hpp_stubs/agimus
+  DESTINATION ${PYTHON_SITELIB}/hpp_stubs)
 
 ADD_CUSTOM_TARGET(generate_idl_cpp DEPENDS ${ALL_IDL_CPP_STUBS} ${ALL_IDL_CPP_IMPL_STUBS})
 ADD_CUSTOM_TARGET(generate_idl_python DEPENDS ${ALL_IDL_PYTHON_STUBS})
@@ -49,6 +53,10 @@ IF(BUILD_HPP_PLUGIN)
     PKG_CONFIG_DEPENDENCIES omniORB4 hpp-corbaserver)
 
   ADD_DEPENDENCIES (agimus-hpp generate_idl_cpp generate_idl_python)
+ELSE(BUILD_HPP_PLUGIN)
+  ADD_CUSTOM_TARGET(generate_idl ALL)
+  # No need to generate C++ bindings
+  ADD_DEPENDENCIES (generate_idl generate_idl_python)
 ENDIF(BUILD_HPP_PLUGIN)
 
 # Install Python files
