@@ -21,7 +21,7 @@ class HppClient(object):
 
     def _connect(self):
         self._hppclient = hpp.corbaserver.Client(context = self.context)
-        self.hpp_tools = hpp.corbaserver.tools.Tools ()
+        self._hpptools = hpp.corbaserver.tools.Tools ()
         try:
             cl = hpp.corbaserver.manipulation.robot.CorbaClient (context = self.context)
             self._manipclient = cl.manipulation
@@ -50,6 +50,9 @@ class HppClient(object):
                 return self.hpp(False)
             else: raise e
         return self._hppclient
+
+    def hpptools (self, reconnect = True):
+        return self._hpptools
 
     ## \deprecated Use HppClient.hpp instead.
     def _manip (self, reconnect = True):

@@ -350,7 +350,7 @@ class HppOutputQueue(HppClient):
         for t in times:
             msgs = self.readAt(path, t, timeShift = start)
             if self.firstMsgs is None: self.firstMsgs = msgs
-        self.hpp_tools.deleteServantFromObject (path)
+        self.hpptools().deleteServantFromObject (path)
         self.pubs["read_path_done"].publish(UInt32(pathId))
         rospy.loginfo("Finish reading path {}".format(pathId))
         self.reading = False
