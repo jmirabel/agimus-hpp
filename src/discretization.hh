@@ -25,6 +25,10 @@
 #include <hpp/constraints/matrix-view.hh>
 #include <hpp/core/path.hh>
 
+#include <ros/node_handle.h>
+#include <ros/init.h>
+#include <ros/publisher.h>
+
 namespace hpp {
   namespace agimus {
     typedef pinocchio::value_type value_type;
@@ -56,12 +60,14 @@ namespace hpp {
         /// \param time
         void compute (value_type time);
 
-        inline bool addCenterOfMass (const CenterOfMassComputationPtr_t& c, int option)
+        inline bool addCenterOfMass (const std::string& name,
+            const CenterOfMassComputationPtr_t& c, int option)
         {
-          return addCenterOfMass (c, (ComputationOption) option);
+          return addCenterOfMass (name, c, (ComputationOption) option);
         }
 
-        bool addCenterOfMass (const CenterOfMassComputationPtr_t& c, ComputationOption option);
+        bool addCenterOfMass (const std::string& name,
+            const CenterOfMassComputationPtr_t& c, ComputationOption option);
 
         inline bool addOperationalFrame (const std::string& name, int option)
         {
@@ -69,6 +75,8 @@ namespace hpp {
         }
 
         bool addOperationalFrame (const std::string& name, ComputationOption option);
+
+        void resetTopics ();
 
         /// \throw std::runtime_error if a joint is not found in the model.
         void setJointNames (const std::vector<std::string>& names);
@@ -78,9 +86,22 @@ namespace hpp {
           path_ = path;
         }
 
+        void topicPrefix (const std::string& tp)
+        {
+          topicPrefix_ = tp;
+        }
+
+        bool initializeRosNode (const std::string& name, bool anonymous);
+
+        void shutdownRos ();
+
+        ~Discretization();
+
       private:
         Discretization (const DevicePtr_t device)
           : device_ (device)
+          , handle_ (NULL)
+          , topicPrefix_ ("/hpp/target/")
         {}
 
         void init (const DiscretizationWkPtr_t)
@@ -88,25 +109,33 @@ namespace hpp {
 
         PathPtr_t path_;
         DevicePtr_t device_;
+        ros::NodeHandle* handle_;
 
         Configuration_t q_;
         vector_t v_;
 
+        std::string topicPrefix_;
+
         Eigen::RowBlockIndices qView_, vView_;
 
+        ros::Publisher pubQ, pubV;
         struct COM {
           CenterOfMassComputationPtr_t com;
           ComputationOption option;
+          ros::Publisher pubQ, pubV;
           COM (CenterOfMassComputationPtr_t _com, ComputationOption _option)
-            : com(_com), option(_option) {}
+            : com(_com), option(_option), pubQ(), pubV() {}
           void compute(::hpp::pinocchio::DeviceData& d);
+          void initPublishers (const std::string& prefix, const std::string& name, ros::NodeHandle& nh);
         };
         std::vector<COM> coms_;
         struct FrameData {
           pinocchio::FrameIndex index;
           ComputationOption option;
+          ros::Publisher pubQ, pubV;
           FrameData (pinocchio::FrameIndex _index, ComputationOption _option)
-            : index(_index), option(_option) {}
+            : index(_index), option(_option), pubQ(), pubV() {}
+          void initPublishers (const std::string& prefix, const std::string& name, ros::NodeHandle& nh);
         };
         std::vector<FrameData> frames_;
     };

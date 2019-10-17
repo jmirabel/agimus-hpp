@@ -50,7 +50,7 @@ IF(BUILD_HPP_PLUGIN)
     discretization.cc
     ${ALL_IDL_CPP_STUBS}
     ${ALL_IDL_CPP_IMPL_STUBS}
-    PKG_CONFIG_DEPENDENCIES omniORB4 hpp-corbaserver)
+    PKG_CONFIG_DEPENDENCIES omniORB4 hpp-corbaserver roscpp)
 
   ADD_DEPENDENCIES (agimus-hpp generate_idl_cpp generate_idl_python)
 ELSE(BUILD_HPP_PLUGIN)

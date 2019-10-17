@@ -33,11 +33,16 @@ module hpp
       const long Derivative            = 2;
       const long PositionAndDerivative = 3;
       void    compute (in value_type time) raises (Error);
-      boolean addCenterOfMass (in pinocchio_idl::CenterOfMassComputation time, in long option) raises (Error);
+      boolean addCenterOfMass (in string name, in pinocchio_idl::CenterOfMassComputation time, in long option) raises (Error);
       boolean addOperationalFrame (in string name, in long option) raises (Error);
+      void    resetTopics () raises (Error);
       void    setJointNames (in Names_t names) raises (Error);
       void    setPath (in core_idl::Path p) raises (Error);
       //-> path
+      boolean initializeRosNode (in string name, in boolean anonymous) raises (Error);
+      void    shutdownRos () raises (Error);
+      void    setTopicPrefix (in string tp) raises (Error);
+      //->topicPrefix
     }; // interface Discretization
 
   }; // module hpp
