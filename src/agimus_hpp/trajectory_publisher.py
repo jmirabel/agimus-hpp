@@ -6,7 +6,6 @@ from agimus_sot_msgs.msg import *
 from agimus_sot_msgs.srv import *
 import ros_tools
 from .tools import *
-import Queue
 from dynamic_graph_bridge_msgs.msg import Vector
 from geometry_msgs.msg import Vector3, Transform
 from std_msgs.msg import UInt32, Empty
@@ -55,305 +54,121 @@ class HppOutputQueue(HppClient):
                 }
             }
 
-    class Topic (object):
-        def __init__ (self, reader, topicPub, MsgType, data = None):
-            self.reader = reader
-            self.pub = rospy.Publisher("/hpp/target/" + topicPub, MsgType, latch=False, queue_size=1000)
-            self.MsgType = MsgType
-            self.data = data
-
-        def init (self, hpp):
-            pass
-
-        def read (self, hpp):
-            return self.reader(hpp, self.data)
-
-        def publish (self, msg):
-            self.pub.publish(msg)
-    class ConstantTopic (object):
-        def __init__ (self, value, topicPub, MsgType):
-            self.pub = rospy.Publisher("/hpp/target/" + topicPub, MsgType, latch=False, queue_size=1000)
-            self.msg = value
-
-        def init (self, hpp):
-            pass
-
-        def read (self, hpp):
-            return None
-
-        def publish (self, msg):
-            assert msg==None
-            self.pub.publish(self.msg)
-
     def __init__ (self):
+        self.discretization = None
+        rospy.on_shutdown (self._ros_shutdown)
+
         super(HppOutputQueue, self).__init__ ()
 
         ## Publication frequency
         self.dt = rospy.get_param ("/sot_controller/dt")
         self.frequency = 1. / self.dt # Hz
-        ## Queue size should be adapted according to the queue size in SoT
-        self.queue_size = 1024
-        self.queue = Queue.Queue (self.queue_size)
 
+        self.resetTopics ()
         self.setJointNames (SetJointNamesRequest(self.hpp().robot.getJointNames()))
 
         self.subscribers = ros_tools.createSubscribers (self, "", self.subscribersDict)
         self.services = ros_tools.createServices (self, "", self.servicesDict)
         self.pubs = ros_tools.createPublishers ("/hpp/target", self.publishersDist)
-        self.reading = False
-        self.firstMsgs = None
 
-        self.resetTopics ()
+    def _connect (self):
+        super(HppOutputQueue, self)._connect ()
+        from hpp.corbaserver.tools import loadServerPlugin
+        loadServerPlugin (self.context, "agimus-hpp.so")
+        from hpp.agimus import Client
+        self._agimus = Client(context=self.context)
+        if self.discretization is None:
+            self.discretization = self._agimus.server.getDiscretization()
+            self.discretization.initializeRosNode ("hpp_server", True)
+        else:
+            try:
+                self.discretization.initializeRosNode ("hpp_server", True)
+            except:
+                self.discretization = self._agimus.server.getDiscretization()
+                self.discretization.initializeRosNode ("hpp_server", True)
+
+    def _ros_shutdown(self):
+        if self.discretization is not None:
+            self.discretization.shutdownRos()
+            self.hpptools().deleteServantFromObject (self.discretization)
 
     def resetTopics (self, msg = None):
-        self.topics = [
-                self.Topic (self._readConfigAtParam  , "position", Vector),
-                self.Topic (self._readVelocityAtParam, "velocity", Vector),
-                ]
-        hpp = self.hpp()
-        self.topics[0].init(hpp)
-        self.topics[1].init(hpp)
+        self.hpp()
+        self.discretization.resetTopics()
         rospy.loginfo("Reset topics")
         if msg is not None:
             return std_srvs.srv.EmptyResponse()
 
     def addCenterOfMass (self, req):
-        # TODO check that com exists
-        comName = req.value
-        n = "com"
-        if comName != "":
-            n += "/" + comName
-        self.topics.append (
-                self.Topic (self._readCenterOfMass, n, Vector3, data = comName),
-                )
-        self.topics[-1].init(self.hpp())
-        rospy.loginfo("Add topic " + n)
-        return SetStringResponse(True)
+        from hpp_idl.hpp.agimus_idl import Discretization
+        try:
+            hpp = self.hpp()
+            comcomp = hpp.robot.getCenterOfMassComputation (req.value)
+            self.discretization.addCenterOfMass (req.value, comcomp, Discretization.Position)
+            self.hpptools().deleteServantFromObject (comcomp)
+        except Exception as e:
+            rospy.logerr("Could not add COM position: " + str(e))
+            return False
+        rospy.loginfo("Add COM position topic " + req.value)
+        return True
 
     def addCenterOfMassVelocity (self, req):
-        # TODO check that com exists
-        comName = req.value
-        n = "velocity/com"
-        if comName != "":
-            n += "/" + comName
-        self.topics.append (
-                self.Topic (self._readCenterOfMassVelocity, n, Vector3, data = comName),
-                )
-        self.topics[-1].init(self.hpp())
-        rospy.loginfo("Add topic " + n)
-        return SetStringResponse(True)
-
-    def _getFrameType (self, n):
-        hpp = self.hpp()
+        from hpp_idl.hpp.agimus_idl import Discretization
         try:
-            hpp.robot.getJointPosition (n)
-            return "joint"
-        # except hpp.Error:
-        except:
-            pass
-        try:
-            hpp.robot.getLinkPosition (n)
-            return "link"
-        # except hpp.Error:
-        except:
-            pass
-        try:
-            hpp.obstacle.getObstaclePosition (n)
-            return "obstacle"
-        # except hpp.Error:
-        except:
-            pass
-        raise ValueError ("Unknown operational frame type of " + n)
+            hpp = self.hpp()
+            comcomp = hpp.robot.getCenterOfMassComputation (req.value)
+            self.discretization.addCenterOfMass (req.value, comcomp, Discretization.Derivative)
+            self.hpptools().deleteServantFromObject (comcomp)
+        except Exception as e:
+            rospy.logerr("Could not add COM velocity: " + str(e))
+            return False
+        rospy.loginfo("Add COM velocity topic " + req.value)
+        return True
 
     def addOperationalFrame (self, req):
-        # TODO check that frame exists
-        n = "op_frame/" + req.value
+        from hpp_idl.hpp.agimus_idl import Discretization
         try:
-            frameType = self._getFrameType (req.value)
-        except ValueError as e:
-            rospy.logerr("Could not add operational frame: " + str(e))
-            return SetStringResponse(False)
-        if frameType == "joint":
-            self.topics.append (self.Topic (self._readJointPosition, n, Transform, data = req.value))
-        elif frameType == "link":
-            self.topics.append (self.Topic (self._readLinkPosition, n, Transform, data = req.value))
-        elif frameType == "obstacle":
-            # TODO There should be a way for the node who requests this
-            # to know the value is constant.
-            hpp = self.hpp()
-            pos = hpp.obstacle.getObstaclePosition (req.value)
-            self.topics.append (self.ConstantTopic (listToTransform(pos), n, Transform))
-        self.topics[-1].init(self.hpp())
-        rospy.loginfo("Add topic " + n + " " + frameType)
-        return SetStringResponse(True)
+            self.discretization.addOperationalFrame (req.value, Discretization.Position)
+        except Exception as e:
+            rospy.logerr("Could not add operational frame pose: " + str(e))
+            return False
+        rospy.loginfo("Add operational frame pose topic " + req.value)
+        return True
 
     def addOperationalFrameVelocity (self, req):
-        # TODO check that frame exists
-        n = "velocity/op_frame/" + req.value
+        from hpp_idl.hpp.agimus_idl import Discretization
         try:
-            frameType = self._getFrameType (req.value)
-        except ValueError as e:
-            rospy.logerr("Could not add operational frame: " + str(e))
-            return SetStringResponse(False)
-        if frameType == "joint":
-            self.topics.append (self.Topic (self._readJointVelocity, n, Vector, data = req.value))
-        elif frameType == "link":
-            self.topics.append (self.Topic (self._readLinkVelocity, n, Vector, data = req.value))
-        elif frameType == "obstacle":
-            # TODO There should be a way for the node who requests this
-            # to know the value is constant.
-            self.topics.append (self.ConstantTopic ([0,0,0,0,0,0], n, Vector))
-        self.topics[-1].init(self.hpp())
-        rospy.loginfo("Add topic " + n + " " + frameType)
-        return SetStringResponse(True)
+            self.discretization.addOperationalFrame (req.value, Discretization.Derivative)
+        except Exception as e:
+            rospy.logerr("Could not add operational frame velocity: " + str(e))
+            return False
+        rospy.loginfo("Add operational frame velocity topic " + req.value)
+        return True
 
     def setJointNames (self, req):
         try:
             hpp = self.hpp()
-            jns = hpp.robot.getJointNames() + [None]
-            # list of segments in [config, velocity]
-            joint_selection = [ [], [] ]
-            # rank in [config, velocity]
-            rks = [0, 0]
-            segments = None
-            for jn in jns:
-                szs = [hpp.robot.getJointConfigSize(jn), hpp.robot.getJointNumberDof(jn)] if jn is not None else [0,0]
-                if jn in req.names:
-                    if segments is None:
-                        segments = [ [rks[0], rks[0] + szs[0]], [rks[1], rks[1] + szs[1]] ]
-                    else:
-                        for i in range(2): segments[i][1] += szs[i]
-                else:
-                    if segments is not None: # insert previous segments
-                        joint_selection[0].append(segments[0])
-                        joint_selection[1].append(segments[1])
-                        segments = None
-                for i in range(2): rks[i] += szs[i]
-            self.jointNames = req.names
-            self.joint_selection = joint_selection
-        except:
-            return SetJointNamesResponse(False)
-        rospy.loginfo("Joint names set to " + str(self.jointNames))
-        self.rootJointName = None
-        self.rootJointSizes = 0
-        for n in self.jointNames:
-            if n.endswith("root_joint"):
-                self.rootJointName = n
-                self.rootJointSizes = ( hpp.robot.getJointConfigSize(n), hpp.robot.getJointNumberDof(n) )
-                break
-        return SetJointNamesResponse(True)
-
-    def _readConfigAtParam (self, client, data):
-        qin = client.robot.getCurrentConfig()
-        qout = list()
-        for segment in self.joint_selection[0]:
-            qout.extend(qin[segment[0]:segment[1]])
-        if self.rootJointName is not None:
-            rootpos = client.robot.getJointPosition(self.rootJointName)
-            # TODO although it is weird, the root joint may not be at
-            # position 0
-            qout[0:self.rootJointSizes[0]] = hppPoseToSotTransRPY (rootpos[0:7])
-        return Vector(qout)
-
-    def _readVelocityAtParam (self, client, data):
-        vin = client.robot.getCurrentVelocity()
-        vout = list()
-        for segment in self.joint_selection[1]:
-            vout.extend(vin[segment[0]:segment[1]])
-        if self.rootJointName is not None:
-            rootvel = client.robot.getJointVelocity(self.rootJointName)
-            # TODO although it is weird, the root joint may not be at
-            # position 0
-            vout[0:self.rootJointSizes[1]] = rootvel
-        return Vector(vout)
-
-    def _readCenterOfMass (self, client, data):
-        if data == "":
-            v = client.robot.getCenterOfMass()
-        else:
-            v = client.robot.getPartialCom(data)
-        return listToVector3(v)
-
-    def _readCenterOfMassVelocity (self, client, data):
-        if data == "":
-            v = client.robot.getCenterOfMassVelocity()
-        else:
-            v = client.robot.getVelocityPartialCom(data)
-        return listToVector3(v)
-
-    def _readJointPosition (self, client, data):
-        t = client.robot.getJointPosition(data)
-        return listToTransform(t)
-
-    def _readJointVelocity (self, client, data):
-        t = client.robot.getJointVelocityInLocalFrame(data)
-        return Vector(t)
-
-    def _readLinkPosition (self, client, data):
-        t = client.robot.getLinkPosition(data)
-        return listToTransform(t)
-
-    def _readLinkVelocity (self, client, data):
-        rospy.logerr ("Link velocity cannot be obtained from HPP")
-        return Vector()
-
-    ## Compute the configuration and velocity of the robot along \c path
-    #  at time \c time.
-    # \param path the path,
-    # \param time along the path,
-    # \param timeShift unused. I forgot the meaning.
-    # \note The derivatives are computed using \f$ \frac{q(t+dt) - q(t)}{dt} \f$
-    # \todo At the moment, HPP does not return the correct path derivatives because
-    #       class StraightPath uses hpp::pinocchio::RnxSOnLieGroupMap and not
-    #       hpp::pinocchio::DefaultLieGroupMap.
-    def readAt (self, path, time, timeShift = 0):
-        hpp = self.hpp()
-        qt, success = path.call(time)
-        hpp.robot.setCurrentConfig( qt )
-        #hpp.robot.setCurrentVelocity( path.derivative (time, 1))
-        device = hpp.problem.getProblem().robot()
-        if time+self.dt > path.length():
-            qt_dt, success = path.call (path.length())
-            dt = path.length() - time
-            if dt == 0:
-                vel = [ 0., ] * hpp.robot.getNumberDof()
-            else:
-                vel = [ v/dt for v in device.difference (qt_dt, qt) ]
-        else:
-            qt_dt, success = path.call (time+self.dt)
-            vel = [ v/self.dt for v in device.difference (qt_dt, qt) ]
-        hpp.robot.setCurrentVelocity( vel )
-        msgs = []
-        for topic in self.topics:
-            msgs.append (topic.read(hpp))
-        self.queue.put (msgs, True)
-        return msgs
-
-    def publishNext (self):
-        msgs = self.queue.get(True)
-        for topic, msg in zip(self.topics, msgs):
-            topic.publish (msg)
-        self.queue.task_done()
+            self.discretization.setJointNames (req.names)
+        except Exception as e:
+            rospy.logerr("Could not set joint names: " + str(e))
+            return False
+        return True
 
     def _read (self, pathId, start, L):
-        from math import ceil, floor
+        from math import ceil, floor, sqrt
         N = int(ceil(abs(L) * self.frequency))
-        rospy.loginfo("Start reading path {} (t in [ {}, {} ]) into {} points".format(pathId, start, start + L, N+1))
-        self.reading = True
-        self.queue = Queue.Queue (self.queue_size)
+        rospy.loginfo("Prepare sampling of path {} (t in [ {}, {} ]) into {} points".format(pathId, start, start + L, N+1))
+
         times = (-1 if L < 0 else 1 ) *np.array(range(N+1), dtype=float) / self.frequency
         times[-1] = L
         times += start
-        self.firstMsgs = None
+
         hpp = self.hpp()
         path = hpp.problem.getPath(pathId)
-        for t in times:
-            msgs = self.readAt(path, t, timeShift = start)
-            if self.firstMsgs is None: self.firstMsgs = msgs
+        self.discretization.setPath (path)
         self.hpptools().deleteServantFromObject (path)
-        self.pubs["read_path_done"].publish(UInt32(pathId))
-        rospy.loginfo("Finish reading path {}".format(pathId))
-        self.reading = False
+
+        self.times = times
 
     def read (self, msg):
         pathId = msg.data
@@ -367,38 +182,39 @@ class HppOutputQueue(HppClient):
     def publishFirst(self, trigger):
         count = 1000
         rate = rospy.Rate (count)
-        if self.firstMsgs is None:
+        if self.times is None:
             rospy.logwarn ("First message not ready yet. Keep trying during one second.")
-        while self.firstMsgs is None and count > 0:
+        while self.times is None and count > 0:
             rate.sleep()
             count -= 1
-        if self.firstMsgs is None:
+        if self.times is None:
             rospy.logerr("Could not print first message")
             return False, "First message not ready yet. Did you call read_path ?"
 
-        for topic, msg in zip(self.topics, self.firstMsgs):
-            topic.publish (msg)
-        self.firstMsgs = None
+        self.discretization.compute (self.times[0])
         return True, ""
 
     def publish(self, empty):
-        rospy.loginfo("Start publishing queue (size is {})".format(self.queue.qsize()))
+        rospy.loginfo("Start publishing path (size is {})".format(len(self.times)))
         # The queue in SOT should have about 100ms of points
         n = 0
         advance = 0.150 * self.frequency # Begin with 150ms of points
+        nstar = min(advance, len(self.times))
         start = rospy.Time.now()
-        # highrate = rospy.Rate (5 * self.frequency)
-        rate = rospy.Rate (10) # Send 100ms every 100ms
-        while not self.queue.empty() or self.reading:
-            dt = (rospy.Time.now() - start).to_sec()
-            nstar = advance + dt * self.frequency
-            while n < nstar and not self.queue.empty():
-                self.publishNext()
+        rate = rospy.Rate (100) # Send 10ms every 10ms
+        while n < len(self.times):
+            if n < nstar:
+                self.discretization.compute (self.times[n])
                 n += 1
-                # highrate.sleep()
-            rate.sleep()
+            else:
+                rate.sleep()
+            dt = (rospy.Time.now() - start).to_sec()
+            nstar = min(advance + dt * self.frequency, len(self.times))
+        self.times = None
         self.pubs["publish_done"].publish(Empty())
         rospy.loginfo("Finish publishing queue ({})".format(n))
 
+    ## \todo rename this service in get_number_of_points.
+    #        This information could also be returned by read and readSub.
     def getQueueSize (self, empty):
-        return self.queue.qsize()
+        return len(self.times)
