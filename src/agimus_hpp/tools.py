@@ -11,3 +11,9 @@ def hppPoseToSotTransRPY(pose):
     from hpp import Quaternion
     q = Quaternion(pose[3:7])
     return pose[0:3] + q.toRPY().tolist()
+
+def sotTransRPYToHppPose(pose):
+    from hpp import Quaternion
+    q = Quaternion()
+    q.fromRPY (*pose [3:6])
+    return pose[0:3] + tuple (q.array)
