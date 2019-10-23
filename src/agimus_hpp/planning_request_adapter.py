@@ -18,7 +18,18 @@ def _setGaussianShooter (hpp, q, dev):
             CORBA.Any(CORBA.TC_double, dev))
     hpp.problem.selectConfigurationShooter ("Gaussian")
 
-## \todo document me.
+## Class that handles ROS motion planning requests and forward them to HPP.
+#
+# This class takes care of:
+# - setting the initial configuration of the planning problem
+#   according to a policy. See PlanningRequestAdapter.modes.
+# - request the resolution of a planning problem.
+#
+# This class *does not* take care of:
+# - initializing the problem (loading the robot, the environment,)
+# - defining the goal.
+#
+# Connection with HPP is handle throw agimus_hpp.client.HppClient.
 class PlanningRequestAdapter(HppClient):
     subscribersDict = {
             "motion_planning": {
@@ -35,6 +46,13 @@ class PlanningRequestAdapter(HppClient):
                 "problem_solved" : [ ProblemSolved, 1],
                 },
             }
+    ## Mode to set the initial configuration of the planning problem.
+    # There are three modes:
+    # - \c current: The current robot configuration, acquired from the PlanningRequestAdapter.topicStateFeedback.
+    #               The base pose is computed using tf and ROS parameter
+    #               \c /motion_planning/tf/world_frame_name
+    # - \c estimated: The robot configuration, acquired from the PlanningRequestAdapter.topicEstimation
+    # - \c uesr_defined: The value passed with topic \c /motion_planning/param/set_init_pose
     modes = [ "current", "estimated", "user_defined" ]
 
     def __init__ (self, topicStateFeedback):
@@ -56,8 +74,8 @@ class PlanningRequestAdapter(HppClient):
         self.robot_name = ""
         self.robot_base_frame = None
 
-    def _hpp (self, reconnect = True):
-        hpp = super(PlanningRequestAdapter, self)._hpp(reconnect)
+    def hpp (self, reconnect = True):
+        hpp = super(PlanningRequestAdapter, self).hpp(reconnect)
         rjn = hpp.robot.getAllJointNames()[1]
         try:
           self.robot_name = rjn[:rjn.index('/')+1]
@@ -76,7 +94,7 @@ class PlanningRequestAdapter(HppClient):
         return hpp
 
     def _JointStateToConfig(self, placement, js_msg):
-        hpp = self._hpp()
+        hpp = self.hpp()
         if self.q_init is not None:
             hpp.robot.setCurrentConfig(self.q_init)
         self.setRootJointConfig(placement)
@@ -89,7 +107,7 @@ class PlanningRequestAdapter(HppClient):
         return hpp.robot.getCurrentConfig()
 
     def set_goal (self, msg):
-        hpp = self._hpp()
+        hpp = self.hpp()
         q_goal = self._JointStateToConfig(msg.base_placement, msg.joint_state)
         hpp.problem.resetGoalConfigs()
         hpp.problem.addGoalConfig(q_goal)
@@ -101,7 +119,7 @@ class PlanningRequestAdapter(HppClient):
                 self.set_init_pose (PlanningGoal(self.last_placement, self.last_joint_state))
             elif self.init_mode == "estimated":
                 self.q_init = self.estimated_config
-            hpp = self._hpp()
+            hpp = self.hpp()
             self._validate_configuration (self.q_init, collision = True)
             rospy.loginfo("init done")
             rospy.loginfo(str(self.q_init))
@@ -124,7 +142,7 @@ class PlanningRequestAdapter(HppClient):
             self.mutexSolve.release()
 
     def _validate_configuration (self, q, collision):
-        hpp = self._hpp()
+        hpp = self.hpp()
         if len(q) != hpp.robot.getConfigSize ():
             rospy.logerr ("Configuration size mismatch: got {0} expected {1}".format(len(q), hpp.robot.getConfigSize ()))
             return False

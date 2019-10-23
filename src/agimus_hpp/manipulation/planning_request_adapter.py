@@ -23,7 +23,7 @@ class PlanningRequestAdapter (Parent):
         if not valid: return False
 
         from CORBA import UserException
-        manip = self._manip ()
+        manip = self.manip ()
         try:
             state_id = manip.graph.getNode (q)
             rospy.loginfo ("Current estimated configuration is in {0}".format(state_id))
@@ -38,7 +38,7 @@ class PlanningRequestAdapter (Parent):
 
     def get_object_root_joints(self):
         world_frame = rospy.get_param ("/motion_planning/tf/world_frame_name")
-        hpp = self._hpp()
+        hpp = self.hpp()
         # Get the name of the objects required by HPP
         root_joints = [el for el in hpp.robot.getAllJointNames() if "root_joint" in el]
         root_joints = [el.split("/")[0] for el in root_joints if not self.robot_name in el]

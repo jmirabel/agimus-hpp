@@ -34,6 +34,8 @@ import ros_tools
 ##       HPP server. It is a mixture of the result of the previous estimation and of the encoder values.
 ##     - if the current state cannot be estimated, it is assumed it has not changed since last iteration.
 ##     - the constraint of this state are used for estimation.
+##
+## Connection with HPP is handle throw agimus_hpp.client.HppClient.
 class Estimation(HppClient):
     ## Subscribed topics (prefixed by "/agimus")
     subscribersDict = {
@@ -113,7 +115,7 @@ class Estimation(HppClient):
         self.mutex.acquire()
 
         try:
-            hpp = self._hpp()
+            hpp = self.hpp()
             q_current = hpp.robot.getCurrentConfig()
 
             self._initialize_constraints (q_current)
@@ -177,14 +179,14 @@ class Estimation(HppClient):
 
     def _initialize_constraints (self, q_current):
         from CORBA import UserException
-        hpp = self._hpp()
+        hpp = self.hpp()
 
         hpp.problem.resetConstraints()
 
         if hasattr(self, "manip"): # hpp-manipulation:
             # Guess current state
             # TODO Add a topic that provides to this node the expected current state (from planning)
-            manip = self._manip ()
+            manip = self.manip ()
             try:
                 state_id = manip.graph.getNode (q_current)
                 rospy.loginfo_throttle(1, "At {0}, current state: {1}".format(self.last_stamp, state_id))
@@ -220,7 +222,7 @@ class Estimation(HppClient):
         from CORBA import UserException
         self.mutex.acquire()
         try:
-            hpp = self._hpp()
+            hpp = self.hpp()
             robot_name = hpp.robot.getRobotName()
             if len(robot_name) > 0: robot_name = robot_name + "/"
             for jn, q in zip(js_msg.name, js_msg.position):
@@ -248,7 +250,7 @@ class Estimation(HppClient):
     def _get_transformation_constraint (self,
             joint1, joint2, transform,
             prefix = "", orientationWeight = 1.):
-        hpp = self._hpp()
+        hpp = self.hpp()
 
         # Create a relative transformation constraint
         j1 = joint1
@@ -314,7 +316,7 @@ class Estimation(HppClient):
 
         self.mutex.acquire()
         try:
-            hpp = self._hpp()
+            hpp = self.hpp()
             robot_name = hpp.robot.getRobotName()
 
             names = self._get_transformation_constraint (

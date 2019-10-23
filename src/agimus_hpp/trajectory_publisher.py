@@ -20,6 +20,8 @@ import std_srvs.srv
 ## \li joint position and velocity (requested via a service),
 ## \li link position and velocity (requested via a service),
 ## \li frame position and velocity (requested via a service).
+##
+## Connection with HPP is handle throw agimus_hpp.client.HppClient.
 class HppOutputQueue(HppClient):
     ## Subscribed topics
     subscribersDict = {
@@ -87,12 +89,13 @@ class HppOutputQueue(HppClient):
         super(HppOutputQueue, self).__init__ ()
 
         ## Publication frequency
-        self.frequency = 1. / rospy.get_param ("/sot_controller/dt") # Hz
+        self.dt = rospy.get_param ("/sot_controller/dt")
+        self.frequency = 1. / self.dt # Hz
         ## Queue size should be adapted according to the queue size in SoT
         self.queue_size = 1024
         self.queue = Queue.Queue (self.queue_size)
 
-        self.setJointNames (SetJointNamesRequest(self._hpp().robot.getJointNames()))
+        self.setJointNames (SetJointNamesRequest(self.hpp().robot.getJointNames()))
 
         self.subscribers = ros_tools.createSubscribers (self, "", self.subscribersDict)
         self.services = ros_tools.createServices (self, "", self.servicesDict)
@@ -107,7 +110,7 @@ class HppOutputQueue(HppClient):
                 self.Topic (self._readConfigAtParam  , "position", Vector),
                 self.Topic (self._readVelocityAtParam, "velocity", Vector),
                 ]
-        hpp = self._hpp()
+        hpp = self.hpp()
         self.topics[0].init(hpp)
         self.topics[1].init(hpp)
         rospy.loginfo("Reset topics")
@@ -123,7 +126,7 @@ class HppOutputQueue(HppClient):
         self.topics.append (
                 self.Topic (self._readCenterOfMass, n, Vector3, data = comName),
                 )
-        self.topics[-1].init(self._hpp())
+        self.topics[-1].init(self.hpp())
         rospy.loginfo("Add topic " + n)
         return SetStringResponse(True)
 
@@ -136,26 +139,26 @@ class HppOutputQueue(HppClient):
         self.topics.append (
                 self.Topic (self._readCenterOfMassVelocity, n, Vector3, data = comName),
                 )
-        self.topics[-1].init(self._hpp())
+        self.topics[-1].init(self.hpp())
         rospy.loginfo("Add topic " + n)
         return SetStringResponse(True)
 
     def _getFrameType (self, n):
-        _hpp = self._hpp()
+        hpp = self.hpp()
         try:
-            _hpp.robot.getJointPosition (n)
+            hpp.robot.getJointPosition (n)
             return "joint"
         # except hpp.Error:
         except:
             pass
         try:
-            _hpp.robot.getLinkPosition (n)
+            hpp.robot.getLinkPosition (n)
             return "link"
         # except hpp.Error:
         except:
             pass
         try:
-            _hpp.obstacle.getObstaclePosition (n)
+            hpp.obstacle.getObstaclePosition (n)
             return "obstacle"
         # except hpp.Error:
         except:
@@ -177,10 +180,10 @@ class HppOutputQueue(HppClient):
         elif frameType == "obstacle":
             # TODO There should be a way for the node who requests this
             # to know the value is constant.
-            _hpp = self._hpp()
-            pos = _hpp.obstacle.getObstaclePosition (req.value)
+            hpp = self.hpp()
+            pos = hpp.obstacle.getObstaclePosition (req.value)
             self.topics.append (self.ConstantTopic (listToTransform(pos), n, Transform))
-        self.topics[-1].init(self._hpp())
+        self.topics[-1].init(self.hpp())
         rospy.loginfo("Add topic " + n + " " + frameType)
         return SetStringResponse(True)
 
@@ -200,13 +203,13 @@ class HppOutputQueue(HppClient):
             # TODO There should be a way for the node who requests this
             # to know the value is constant.
             self.topics.append (self.ConstantTopic ([0,0,0,0,0,0], n, Vector))
-        self.topics[-1].init(self._hpp())
+        self.topics[-1].init(self.hpp())
         rospy.loginfo("Add topic " + n + " " + frameType)
         return SetStringResponse(True)
 
     def setJointNames (self, req):
         try:
-            hpp = self._hpp()
+            hpp = self.hpp()
             jns = hpp.robot.getJointNames() + [None]
             # list of segments in [config, velocity]
             joint_selection = [ [], [] ]
@@ -294,10 +297,32 @@ class HppOutputQueue(HppClient):
         rospy.logerr ("Link velocity cannot be obtained from HPP")
         return Vector()
 
-    def readAt (self, pathId, time, timeShift = 0):
-        hpp = self._hpp()
-        hpp.robot.setCurrentConfig( hpp.problem.configAtParam (pathId, time))
-        hpp.robot.setCurrentVelocity( hpp.problem.derivativeAtParam (pathId, 1, time))
+    ## Compute the configuration and velocity of the robot along \c path
+    #  at time \c time.
+    # \param path the path,
+    # \param time along the path,
+    # \param timeShift unused. I forgot the meaning.
+    # \note The derivatives are computed using \f$ \frac{q(t+dt) - q(t)}{dt} \f$
+    # \todo At the moment, HPP does not return the correct path derivatives because
+    #       class StraightPath uses hpp::pinocchio::RnxSOnLieGroupMap and not
+    #       hpp::pinocchio::DefaultLieGroupMap.
+    def readAt (self, path, time, timeShift = 0):
+        hpp = self.hpp()
+        qt, success = path.call(time)
+        hpp.robot.setCurrentConfig( qt )
+        #hpp.robot.setCurrentVelocity( path.derivative (time, 1))
+        device = hpp.problem.getProblem().robot()
+        if time+self.dt > path.length():
+            qt_dt, success = path.call (path.length())
+            dt = path.length() - time
+            if dt == 0:
+                vel = [ 0., ] * hpp.robot.getNumberDof()
+            else:
+                vel = [ v/dt for v in device.difference (qt_dt, qt) ]
+        else:
+            qt_dt, success = path.call (time+self.dt)
+            vel = [ v/self.dt for v in device.difference (qt_dt, qt) ]
+        hpp.robot.setCurrentVelocity( vel )
         msgs = []
         for topic in self.topics:
             msgs.append (topic.read(hpp))
@@ -320,16 +345,19 @@ class HppOutputQueue(HppClient):
         times[-1] = L
         times += start
         self.firstMsgs = None
+        hpp = self.hpp()
+        path = hpp.problem.getPath(pathId)
         for t in times:
-            msgs = self.readAt(pathId, t, timeShift = start)
+            msgs = self.readAt(path, t, timeShift = start)
             if self.firstMsgs is None: self.firstMsgs = msgs
+        self.hpptools().deleteServantFromObject (path)
         self.pubs["read_path_done"].publish(UInt32(pathId))
         rospy.loginfo("Finish reading path {}".format(pathId))
         self.reading = False
 
     def read (self, msg):
         pathId = msg.data
-        hpp = self._hpp()
+        hpp = self.hpp()
         L = hpp.problem.pathLength(pathId)
         self._read (pathId, 0, L)
 

@@ -15,10 +15,10 @@
   \endlink
   initializes a client to \c hppcorbaserver and samples reference trajectories
   of various tasks in topics. For instance
-  \li \c /hpp/target/op_fame/talos/arm_left7_joint for the reference position
-      of joint \c arm_left7_joint of Talos robot,
-  \li \c /hpp/target/velocity/op_fame/talos/arm_left7_joint for the reference
-      velocity of joint \c arm_left7_joint,
+  \li \c /hpp/target/op_fame/talos/arm_left_7_joint for the reference position
+      of joint \c arm_left_7_joint of Talos robot,
+  \li \c /hpp/target/velocity/op_fame/talos/arm_left_7_joint for the reference
+      velocity of joint \c arm_left_7_joint,
   \li \c /hpp/target/position for the reference value of the posture task,
   \li \c /hpp/target/velocity for the reference velocity of the posture,
   \li \c /hpp/target/com/talos for the reference trajectory of the center

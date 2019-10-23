@@ -1,5 +1,6 @@
 import rospy, CORBA
 import hpp.corbaserver
+import hpp.corbaserver.tools
 import hpp.corbaserver.robot
 import hpp.corbaserver.manipulation
 import hpp.corbaserver.manipulation.robot
@@ -19,66 +20,55 @@ class HppClient(object):
         self._connect()
 
     def _connect(self):
-        self.hpp = hpp.corbaserver.Client(context = self.context)
+        self._hppclient = hpp.corbaserver.Client(context = self.context)
+        self._hpptools = hpp.corbaserver.tools.Tools ()
         try:
             cl = hpp.corbaserver.manipulation.robot.CorbaClient (context = self.context)
-            self.manip = cl.manipulation
+            self._manipclient = cl.manipulation
             self.robot = hpp.corbaserver.manipulation.robot.Robot (client = cl)
             self.problemSolver = hpp.corbaserver.manipulation.ProblemSolver(self.robot)
         except Exception, e:
             rospy.logwarn("Could not connect to manipulation server: " + str(e))
-            if hasattr(self, "manip"): delattr(self, "manip")
-            self.robot = hpp.corbaserver.robot.Robot(client = self.hpp)
+            if hasattr(self, "_manipclient"): delattr(self, "_manipclient")
+            self.robot = hpp.corbaserver.robot.Robot(client = self._hppclient)
             self.problemSolver = hpp.corbaserver.ProblemSolver(self.robot)
         rospy.loginfo("Connected to hpp")
 
+    ## \deprecated Use HppClient.hpp instead.
+    def _hpp (self, reconnect = True):
+        return self.hpp (reconnect)
+
     ## Get the hppcorbaserver client.
     ## It handles reconnection if needed.
-    ## \todo rename me
-    def _hpp (self, reconnect = True):
+    def hpp (self, reconnect = True):
         try:
-            self.hpp.problem.getAvailable("type")
+            self._hppclient.problem.getAvailable("type")
         except (CORBA.TRANSIENT, CORBA.COMM_FAILURE) as e:
             if reconnect:
                 rospy.loginfo ("Connection with HPP lost. Trying to reconnect.")
                 self._connect()
-                return self._hpp(False)
+                return self.hpp(False)
             else: raise e
-        return self.hpp
+        return self._hppclient
+
+    def hpptools (self, reconnect = True):
+        return self._hpptools
+
+    ## \deprecated Use HppClient.hpp instead.
+    def _manip (self, reconnect = True):
+        return self.manip (reconnect)
 
     ## Get the hppcorbaserver manipulation client.
     ## It handles reconnection if needed.
-    ## \todo rename me
-    def _manip (self, reconnect = True):
-        if not hasattr(self, "manip"):
+    def manip (self, reconnect = True):
+        if not hasattr(self, "_manipclient"):
             raise Exception("No manip client")
         try:
-            self.manip.problem.getAvailable("type")
+            self._manipclient.problem.getAvailable("type")
         except (CORBA.TRANSIENT, CORBA.COMM_FAILURE) as e:
             if reconnect:
                 rospy.loginfo ("Connection with HPP lost. Trying to reconnect.")
                 self._connect()
-                return self._manip(False)
+                return self.manip(False)
             else: raise e
-        return self.manip
-
-    ## \deprecated
-    def _createTopics (self, namespace, topics, subscribe):
-        """
-        \param subscribe boolean whether this node should subscribe to the topics.
-                                 If False, this node publishes to the topics.
-        """
-        if subscribe:
-            return ros_tools.createSubscribers (self, namespace, topics)
-        else:
-            return ros_tools.createPublishers (namespace, topics)
-
-    ## \deprecated
-    def _createServices (self, namespace, services, serve):
-        """
-        \param serve boolean whether this node should serve or use the topics.
-        """
-        if serve:
-            return ros_tools.createServices (self, namespace, services)
-        else:
-            return ros_tools.createServiceProxies (namespace, services)
+        return self._manipclient
