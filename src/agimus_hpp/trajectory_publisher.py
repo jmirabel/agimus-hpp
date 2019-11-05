@@ -202,14 +202,24 @@ class HppOutputQueue(HppClient):
         nstar = min(advance, len(self.times))
         start = rospy.Time.now()
         rate = rospy.Rate (100) # Send 10ms every 10ms
+        computation_time = rospy.Duration()
+        now = rospy.Time.now()
         while n < len(self.times):
             if n < nstar:
+                prev = rospy.Time.now()
                 self.discretization.compute (self.times[n])
+                now = rospy.Time.now()
+                computation_time += now - prev
                 n += 1
             else:
                 rate.sleep()
-            dt = (rospy.Time.now() - start).to_sec()
-            nstar = min(advance + dt * self.frequency, len(self.times))
+                now = rospy.Time.now()
+            t = (now - start).to_sec()
+            nstar = min(advance + t * self.frequency, len(self.times))
+
+        avg = computation_time.to_sec()/n
+        if self.dt <= avg:
+            rospy.logwarn("The average sampling time of the reference trajectory ({}) is higher than the execution time ({}). Consider subsampling or preprocessing.".format(avg, self.dt))
         self.times = None
         self.pubs["publish_done"].publish(Empty())
         rospy.loginfo("Finish publishing queue ({})".format(n))
