@@ -101,12 +101,21 @@ namespace hpp {
 
       dynamic_graph_bridge_msgs::Vector qmsgs;
 
-      qmsgs.data.resize(qView_.nbIndices());
-      Eigen::Map<pinocchio::vector_t> (qmsgs.data.data(), qView_.nbIndices()) = qView_.rview(q_);
+      qmsgs.data.resize(qView_.nbIndices()+6);
+      Eigen::Map<pinocchio::vector_t> (qmsgs.data.data()+6, qView_.nbIndices()) = qView_.rview(q_);
+      { // Set root joint position
+        // TODO at the moment, we must convert the quaternion into RPY values.
+        const pinocchio::SE3& oMrj = device.data().oMi[1];
+        Eigen::Map<pinocchio::vector3_t> (qmsgs.data.data()  ) = oMrj.translation();
+        Eigen::Map<pinocchio::vector3_t> (qmsgs.data.data()+3) = oMrj.rotation().eulerAngles (2, 1, 0);
+      }
       pubQ.publish (qmsgs);
 
-      qmsgs.data.resize(vView_.nbIndices());
-      Eigen::Map<pinocchio::vector_t> (qmsgs.data.data(), vView_.nbIndices()) = vView_.rview(v_);
+      qmsgs.data.resize(vView_.nbIndices()+6);
+      Eigen::Map<pinocchio::vector_t> (qmsgs.data.data()+6, vView_.nbIndices()) = vView_.rview(v_);
+      { // TODO Set root joint velocity
+        Eigen::Map<pinocchio::vector_t> (qmsgs.data.data(), 6).setZero();
+      }
       pubV.publish (qmsgs);
 
       for (std::size_t i = 0; i < frames_.size(); ++i) {
