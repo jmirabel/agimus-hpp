@@ -71,6 +71,8 @@ class HppOutputQueue(HppClient):
         self.services = ros_tools.createServices (self, "", self.servicesDict)
         self.pubs = ros_tools.createPublishers ("/hpp/target", self.publishersDist)
 
+        self.times = None
+
     def _connect (self):
         super(HppOutputQueue, self)._connect ()
         from hpp.corbaserver.tools import loadServerPlugin
