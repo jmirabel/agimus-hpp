@@ -150,7 +150,9 @@ class HppOutputQueue(HppClient):
     def setJointNames (self, req):
         try:
             hpp = self.hpp()
-            self.discretization.setJointNames (req.names)
+            # TODO at the moment, the root joint is considered to be always added.
+            names = [ n for n in req.names if "root_joint" not in n ]
+            self.discretization.setJointNames (names)
         except Exception as e:
             rospy.logerr("Could not set joint names: " + str(e))
             return False
