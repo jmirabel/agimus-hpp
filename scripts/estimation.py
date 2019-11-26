@@ -37,8 +37,15 @@ continuous_estimation = False
 if "--continuous-estimation" in sys.argv:
     continuous_estimation = True
 
-_est = est.Estimation (continuous_estimation=continuous_estimation,
-        joint_states_topic=topic,
-        visual_tags_enabled=visual_tags_enabled)
-_est.estimation_rate = estimation_rate
-_est.spin()
+def run():
+    _est = est.Estimation (continuous_estimation=continuous_estimation,
+            joint_states_topic=topic,
+            visual_tags_enabled=visual_tags_enabled)
+    _est.estimation_rate = estimation_rate
+    _est.spin()
+
+if __name__ == "__main__":
+    try:
+        run()
+    except rospy.ROSInterruptException:
+        pass
