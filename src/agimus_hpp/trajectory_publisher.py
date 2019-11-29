@@ -132,7 +132,7 @@ class HppOutputQueue(HppClient):
         try:
             self.discretization.addOperationalFrame (req.value, Discretization.Position)
         except Exception as e:
-            rospy.logerr("Could not add operational frame pose: " + str(e))
+            rospy.logerr("Could not add operational frame pose {}: {}".format(req.value, e))
             return False
         rospy.loginfo("Add operational frame pose topic " + req.value)
         return True
@@ -142,7 +142,7 @@ class HppOutputQueue(HppClient):
         try:
             self.discretization.addOperationalFrame (req.value, Discretization.Derivative)
         except Exception as e:
-            rospy.logerr("Could not add operational frame velocity: " + str(e))
+            rospy.logerr("Could not add operational frame velocity {}: {}".format(req.value, e))
             return False
         rospy.loginfo("Add operational frame velocity topic " + req.value)
         return True

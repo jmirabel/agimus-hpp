@@ -42,9 +42,16 @@ else:
     import agimus_hpp.planning_request_adapter as pra
     print "Launching default client"
 
-rospy.init_node('hpp_server_connection')
+def run():
+    rospy.init_node('hpp_server_connection')
 
-_pra = pra.PlanningRequestAdapter ("/joint_states")
-_tp = tp.HppOutputQueue ()
+    _pra = pra.PlanningRequestAdapter ("/joint_states")
+    _tp = tp.HppOutputQueue ()
 
-rospy.spin()
+    rospy.spin()
+
+if __name__ == "__main__":
+    try:
+        run()
+    except rospy.ROSInterruptException:
+        pass
