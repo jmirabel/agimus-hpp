@@ -35,7 +35,7 @@ import ros_tools
 ##     - if the current state cannot be estimated, it is assumed it has not changed since last iteration.
 ##     - the constraint of this state are used for estimation.
 ##
-## Connection with HPP is handle throw agimus_hpp.client.HppClient.
+## Connection with HPP is handled by agimus_hpp.client.HppClient.
 class Estimation(HppClient):
     ## Subscribed topics (prefixed by "/agimus")
     subscribersDict = {
