@@ -267,6 +267,7 @@ class Estimation(HppClient):
             names = ["T_"+name, ]
             hpp.problem.createTransformationConstraint (names[0], j1, j2, T, [True,]*6)
         else:
+            from hpp import Quaternion
             names = ["P_"+name, "sO_"+name]
             hpp.problem.createPositionConstraint (names[0], j1, j2, T[:3], [0,0,0], [True,]*3)
             hpp.problem.createOrientationConstraint ("O_"+name, j1, j2, Quaternion(T[3:]).inv().toTuple(), [True,]*3)
