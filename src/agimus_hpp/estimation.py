@@ -253,8 +253,8 @@ class Estimation(HppClient):
         hpp = self.hpp()
 
         # Create a relative transformation constraint
-        j1 = joint1
-        j2 = joint2
+        j1 = joint1 if "/" in joint1 else self.robot_name + "/" + joint1
+        j2 = joint2 if "/" in joint2 else self.robot_name + "/" + joint2
         name = prefix + j1 + "_" + j2
         T = [ transform.translation.x,
               transform.translation.y,
