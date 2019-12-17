@@ -54,23 +54,21 @@ namespace hpp {
 
     std::string ServerPlugin::name () const
     {
-      return "agimus-hpp";
+      return "agimus";
     }
 
     /// Start corba server
     void ServerPlugin::startCorbaServer(const std::string& contextId,
 				  const std::string& contextKind)
     {
-      bool mThd = parent()->multiThread();
-      serverImpl_   = new corba::Server <impl::Server>   (0, NULL, mThd, "child");
-
+      initializeTplServer (serverImpl_, contextId, contextKind, name(), "server");
       serverImpl_->implementation ().setServer (this);
+    }
 
-      if (serverImpl_->startCorbaServer(contextId, contextKind,
-				       "agimus", "server") != 0) {
-	HPP_THROW_EXCEPTION (hpp::Exception,
-			     "Failed to start agimus corba server.");
-      }
+    ::CORBA::Object_ptr ServerPlugin::servant(const std::string& name) const
+    {
+      if (name == "server") return serverImpl_->implementation()._this();
+      throw std::invalid_argument ("No servant " + name);
     }
   } // namespace agimus
 } // namespace hpp
