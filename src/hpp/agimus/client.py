@@ -26,7 +26,7 @@ class Client (_Parent):
   """
 
   defaultClients = {
-          'Server'  : Server,
+          'server'  : Server,
           }
   def __init__(self, url = None, context = "corbaserver"):
     """
