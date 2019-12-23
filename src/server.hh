@@ -46,7 +46,7 @@ namespace hpp {
             server_ = server;
           }
 
-          agimus_idl::Discretization_ptr getDiscretization () throw (Error);
+          agimus_idl::Discretization_ptr getDiscretization ();
 
         private:
           ServerPlugin* server_;

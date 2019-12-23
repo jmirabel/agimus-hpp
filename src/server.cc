@@ -31,7 +31,7 @@
 namespace hpp {
   namespace agimus {
     namespace impl {
-      agimus_idl::Discretization_ptr Server::getDiscretization () throw (Error)
+      agimus_idl::Discretization_ptr Server::getDiscretization ()
       {
         DiscretizationPtr_t d =
           Discretization::create (server_->problemSolver()->robot());
