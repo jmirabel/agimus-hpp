@@ -6,7 +6,6 @@ import hpp.corbaserver.manipulation
 import hpp.corbaserver.manipulation.robot
 import hpp.gepetto
 import hpp.gepetto.manipulation
-import ros_tools
 
 ## Handles connection with HPP servers
 #

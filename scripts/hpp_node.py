@@ -37,10 +37,10 @@ import sys, rospy, agimus_hpp.trajectory_publisher as tp
 
 if "hpp-manipulation-server" in sys.argv:
     import agimus_hpp.manipulation.planning_request_adapter as pra
-    print "Launching manipulation client"
+    print ("Launching manipulation client")
 else:
     import agimus_hpp.planning_request_adapter as pra
-    print "Launching default client"
+    print ("Launching default client")
 
 def run():
     rospy.init_node('hpp_server_connection')

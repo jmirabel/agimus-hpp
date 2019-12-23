@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import rospy, hpp.corbaserver
-import ros_tools
+import agimus_hpp.ros_tools as ros_tools
 from tf import TransformListener
 from .client import HppClient
 from dynamic_graph_bridge_msgs.msg import Vector

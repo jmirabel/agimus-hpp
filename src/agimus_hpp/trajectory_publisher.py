@@ -4,7 +4,7 @@ import numpy as np
 from .client import HppClient
 from agimus_sot_msgs.msg import *
 from agimus_sot_msgs.srv import *
-import ros_tools
+import agimus_hpp.ros_tools as ros_tools
 from .tools import *
 from dynamic_graph_bridge_msgs.msg import Vector
 from geometry_msgs.msg import Vector3, Transform
