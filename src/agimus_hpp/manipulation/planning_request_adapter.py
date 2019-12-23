@@ -48,6 +48,7 @@ class PlanningRequestAdapter (Parent):
                 p, q = self.tfListener.lookupTransform(world_frame, obj, rospy.Time(0))
                 hpp.robot.setJointConfig(obj + "/root_joint", p + q)
             else:
-                print obj + " is not published on the TF tree but is needed to plan the trajectory of the robot."
+                print (obj + " is not published on the TF tree but is " +
+                       "needed to plan the trajectory of the robot.")
 
         return hpp.robot.getCurrentConfig()

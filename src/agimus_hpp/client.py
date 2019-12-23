@@ -27,7 +27,7 @@ class HppClient(object):
             self._manipclient = cl.manipulation
             self.robot = hpp.corbaserver.manipulation.robot.Robot (client = cl)
             self.problemSolver = hpp.corbaserver.manipulation.ProblemSolver(self.robot)
-        except Exception, e:
+        except Exception as e:
             rospy.logwarn("Could not connect to manipulation server: " + str(e))
             if hasattr(self, "_manipclient"): delattr(self, "_manipclient")
             self.robot = hpp.corbaserver.robot.Robot(client = self._hppclient)

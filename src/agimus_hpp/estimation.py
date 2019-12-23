@@ -96,7 +96,7 @@ class Estimation(HppClient):
 
     def continuous_estimation(self, msg):
         self.run_continuous_estimation = msg.data
-	rospy.loginfo ("Run continuous estimation: {0}".format(self.run_continuous_estimation))
+        rospy.loginfo ("Run continuous estimation: {0}".format(self.run_continuous_estimation))
         return True, "ok"
 
     def spin (self):
@@ -242,7 +242,7 @@ class Estimation(HppClient):
                 hpp.problem.createLockedJoint ('lock_' + name, name, qjoint)
             if len(self.locked_joints) == 0:
                 self.locked_joints = tuple(['lock_'+robot_name+n for n in js_msg.name])
-	except UserException as e:
+        except UserException as e:
             rospy.logerr ("Cannot get joint state: {0}".format(e))
         finally:
             self.mutex.release()
