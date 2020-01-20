@@ -76,7 +76,7 @@ class Estimation(HppClient):
 
         self.mutex = Lock()
 
-        self.robot_name = rospy.get_param("robot_name", "")
+        self.robot_name = rospy.get_param("~robot_name", "")
 
         self.last_stamp_is_ready = False
         self.last_stamp = rospy.Time.now()
@@ -195,7 +195,7 @@ class Estimation(HppClient):
                     state_id = self.last_state_id
                     rospy.logwarn_throttle(1, "At {0}, assumed last state: {1}".format(self.last_stamp, state_id))
                 else:
-                    state_id = rospy.get_param ("default_state_id")
+                    state_id = rospy.get_param ("~default_state_id")
                     rospy.logwarn_throttle(1, "At {0}, assumed default current state: {1}".format(self.last_stamp, state_id))
             self.last_state_id = state_id
             self.publishers["estimation"]["state_id"].publish (state_id)
@@ -205,7 +205,7 @@ class Estimation(HppClient):
             hpp.problem.addLockedJointConstraints("unused", self.locked_joints)
         else:
             # hpp-corbaserver: setNumericalConstraints
-            default_constraints = rospy.get_param ("default_constraints")
+            default_constraints = rospy.get_param ("~default_constraints")
             hpp.problem.addLockedJointConstraints("unused", self.locked_joints)
             hpp.problem.addNumericalConstraints ("constraints",
                     default_constraints,
