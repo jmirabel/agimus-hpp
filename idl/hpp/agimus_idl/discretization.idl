@@ -29,6 +29,8 @@ module hpp
   {
     interface Discretization
     {
+      HPP_EXPOSE_MEMORY_DEALLOCATION
+
       const long Position              = 1;
       const long Derivative            = 2;
       const long PositionAndDerivative = 3;
