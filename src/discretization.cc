@@ -77,7 +77,7 @@ namespace hpp {
 
     Discretization::~Discretization ()
     {
-      if (handle_) delete handle_;
+      shutdownRos();
     }
 
     void Discretization::compute (value_type time)
@@ -256,8 +256,8 @@ namespace hpp {
     void Discretization::shutdownRos ()
     {
       resetTopics();
-      pubQ = ros::Publisher();
-      pubV = ros::Publisher();
+      pubQ.shutdown();
+      pubV.shutdown();
       if (handle_) delete handle_;
       handle_ = NULL;
     }

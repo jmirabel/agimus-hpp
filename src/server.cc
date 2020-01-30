@@ -33,11 +33,16 @@ namespace hpp {
     namespace impl {
       agimus_idl::Discretization_ptr Server::getDiscretization ()
       {
-        DiscretizationPtr_t d =
+        discretization_ =
           Discretization::create (server_->problemSolver()->robot());
 
+        corbaServer::agimus_impl::Discretization* servant =
+          new corbaServer::agimus_impl::Discretization (server_->parent(),
+              discretization_);
+        servant->persistantStorage(false);
+
         return corbaServer::makeServant<agimus_idl::Discretization_ptr>
-          (server_->parent(), new corbaServer::agimus_impl::Discretization (server_->parent(), d));
+          (server_->parent(), servant);
       }
 
     } // namespace impl
