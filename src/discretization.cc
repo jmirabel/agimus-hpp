@@ -233,8 +233,8 @@ namespace hpp {
 
     bool Discretization::initializeRosNode (const std::string& name, bool anonymous)
     {
-      if (!ros::isInitialized ())
-      {
+      if (!ros::isInitialized()) {
+        // Call ros init
         int option = ros::init_options::NoSigintHandler | (anonymous ? ros::init_options::AnonymousName : 0);
         int argc = 0;
         ros::init (argc, NULL, name, option);
@@ -255,6 +255,9 @@ namespace hpp {
 
     void Discretization::shutdownRos ()
     {
+      resetTopics();
+      pubQ = ros::Publisher();
+      pubV = ros::Publisher();
       if (handle_) delete handle_;
       handle_ = NULL;
     }

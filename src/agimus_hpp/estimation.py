@@ -76,7 +76,7 @@ class Estimation(HppClient):
 
         self.mutex = Lock()
 
-        self.robot_name = rospy.get_param("robot_name", "")
+        self.robot_name = rospy.get_param("~robot_name", "")
 
         self.last_stamp_is_ready = False
         self.last_stamp = rospy.Time.now()
@@ -195,7 +195,7 @@ class Estimation(HppClient):
                     state_id = self.last_state_id
                     rospy.logwarn_throttle(1, "At {0}, assumed last state: {1}".format(self.last_stamp, state_id))
                 else:
-                    state_id = rospy.get_param ("default_state_id")
+                    state_id = rospy.get_param ("~default_state_id")
                     rospy.logwarn_throttle(1, "At {0}, assumed default current state: {1}".format(self.last_stamp, state_id))
             self.last_state_id = state_id
             self.publishers["estimation"]["state_id"].publish (state_id)
@@ -205,7 +205,7 @@ class Estimation(HppClient):
             hpp.problem.addLockedJointConstraints("unused", self.locked_joints)
         else:
             # hpp-corbaserver: setNumericalConstraints
-            default_constraints = rospy.get_param ("default_constraints")
+            default_constraints = rospy.get_param ("~default_constraints")
             hpp.problem.addLockedJointConstraints("unused", self.locked_joints)
             hpp.problem.addNumericalConstraints ("constraints",
                     default_constraints,
@@ -253,8 +253,9 @@ class Estimation(HppClient):
         hpp = self.hpp()
 
         # Create a relative transformation constraint
-        j1 = joint1 if "/" in joint1 else self.robot_name + "/" + joint1
-        j2 = joint2 if "/" in joint2 else self.robot_name + "/" + joint2
+        j1 = joint1
+        j2 = joint2
+
         name = prefix + j1 + "_" + j2
         T = [ transform.translation.x,
               transform.translation.y,
@@ -274,11 +275,11 @@ class Estimation(HppClient):
             hpp.problem.scCreateScalarMultiply (names[1], orientationWeight, "O_"+name)
         return names
 
-    def get_visual_tag (self, ts_msg):
-        stamp = ts_msg.header.stamp
+    def get_visual_tag (self, tsmsg):
+        stamp = tsmsg.header.stamp
         if stamp < self.current_stamp: return
 
-        rot = ts_msg.transform.rotation
+        rot = tsmsg.transform.rotation
         # Compute scalar product between Z axis of camera and of tag.
         # TODO Add a weight between translation and orientation
         # It should depend on:
@@ -295,8 +296,14 @@ class Estimation(HppClient):
         try:
             self.mutex.acquire()
 
-            names = self._get_transformation_constraint (
-                ts_msg.header.frame_id, ts_msg.child_frame_id, ts_msg.transform,
+            j1 = tsmsg.header.frame_id
+            j2 = tsmsg.child_frame_id
+            if j1.endswith("_measured"): j1 = j1[:-len("_measured")]
+            if j2.endswith("_measured"): j2 = j2[:-len("_measured")]
+            if "/" not in j1: j1 = self.robot_name + "/" + j1
+            if "/" not in j2: j2 = self.robot_name + "/" + j2
+
+            names = self._get_transformation_constraint(j1, j2, tsmsg.transform,
                 prefix="", orientationWeight = s)
             # If this tag is in the next image:
             if self.current_stamp < stamp:
