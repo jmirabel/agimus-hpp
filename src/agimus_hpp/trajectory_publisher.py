@@ -81,13 +81,13 @@ class HppOutputQueue(HppClient):
         self._agimus = Client(context=self.context)
         if self.discretization is None:
             self.discretization = self._agimus.server.getDiscretization()
-            self.discretization.initializeRosNode ("hpp_server", True)
+            self.discretization.initializeRosNode ("hpp_discretization", False)
         else:
             try:
-                self.discretization.initializeRosNode ("hpp_server", True)
+                self.discretization.initializeRosNode ("hpp_discretization", False)
             except:
                 self.discretization = self._agimus.server.getDiscretization()
-                self.discretization.initializeRosNode ("hpp_server", True)
+                self.discretization.initializeRosNode ("hpp_discretization", False)
 
     def _ros_shutdown(self):
         if self.discretization is not None:
