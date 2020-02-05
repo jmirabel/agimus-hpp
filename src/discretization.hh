@@ -25,6 +25,7 @@
 #include <hpp/constraints/matrix-view.hh>
 #include <hpp/core/path.hh>
 
+#include <boost/thread/mutex.hpp>
 #include <ros/node_handle.h>
 #include <ros/init.h>
 #include <ros/publisher.h>
@@ -110,6 +111,7 @@ namespace hpp {
         PathPtr_t path_;
         DevicePtr_t device_;
         ros::NodeHandle* handle_;
+        boost::mutex mutex_;
 
         Configuration_t q_;
         vector_t v_;
