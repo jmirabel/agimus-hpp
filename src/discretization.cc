@@ -77,11 +77,12 @@ namespace hpp {
 
     Discretization::~Discretization ()
     {
-      if (handle_) delete handle_;
+      shutdownRos();
     }
 
     void Discretization::compute (value_type time)
     {
+      boost::mutex::scoped_lock lock(mutex_);
       if (!path_)
         throw std::logic_error ("Path is not set");
       HPP_START_TIMECOUNTER(discretization);
@@ -255,9 +256,11 @@ namespace hpp {
 
     void Discretization::shutdownRos ()
     {
+      if (!handle_) return;
+      boost::mutex::scoped_lock lock(mutex_);
       resetTopics();
-      pubQ = ros::Publisher();
-      pubV = ros::Publisher();
+      pubQ.shutdown();
+      pubV.shutdown();
       if (handle_) delete handle_;
       handle_ = NULL;
     }

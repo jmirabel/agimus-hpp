@@ -30,6 +30,7 @@
 
 # include <hpp/agimus_idl/server-idl.hh>
 # include <hpp/agimus_idl/discretization-idl.hh>
+# include "discretization.hh"
 
 namespace hpp {
   namespace agimus {
@@ -50,6 +51,7 @@ namespace hpp {
 
         private:
           ServerPlugin* server_;
+          DiscretizationPtr_t discretization_;
       };
     }
 
