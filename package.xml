@@ -13,5 +13,10 @@
   <exec_depend>agimus_sot_msgs</exec_depend>
   <exec_depend>std_msgs</exec_depend>
 
+  <depend>roscpp</depend>
+  <depend>omniORB4</depend>
+  <depend>hpp-corbaserver</depend>
+  <depend>hpp-manipulation-corba</depend>
+
   <exec_depend>rospy</exec_depend>
 </package>

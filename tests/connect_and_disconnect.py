@@ -35,3 +35,16 @@ discretization.shutdownRos()
 if verbose:
     print("HPP uri after shutdown: " + str(get_node_uri()))
 assert get_node_uri() == None, "HPP could not be disconnected from ROS"
+
+success = discretization.initializeRosNode('foo', False)
+if verbose:
+    print("started: " + str(success))
+    print("HPP uri after initialization: " + str(get_node_uri()))
+assert success, "Failed to initialize ROS node"
+assert get_node_uri() != None, "HPP ROS node could not be found"
+
+discretization = cl.server.getDiscretization()
+discretization.shutdownRos()
+if verbose:
+    print("HPP uri after shutdown: " + str(get_node_uri()))
+assert get_node_uri() == None, "HPP could not be disconnected from ROS"
