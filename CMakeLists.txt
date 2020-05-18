@@ -18,20 +18,24 @@
 # Requires at least CMake 2.6 to configure the package.
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 
+SET(PROJECT_NAME agimus-hpp)
+SET(PROJECT_DESCRIPTION "Package to link HPP to the Agimus framework")
+SET(PROJECT_URL "")
+
+SET(PROJECT_USE_KEYWORD_LINK_LIBRARIES TRUE)
+
 INCLUDE(cmake/base.cmake)
 INCLUDE(cmake/python.cmake)
 INCLUDE(cmake/idl.cmake)
 
-SET(PROJECT_NAME agimus-hpp)
-SET(PROJECT_DESCRIPTION "Package to link HPP to the Agimus framework")
-SET(PROJECT_URL "")
+COMPUTE_PROJECT_ARGS(PROJECT_ARGS LANGUAGES CXX)
+project(${PROJECT_NAME} ${PROJECT_ARGS})
 
 OPTION(BUILD_HPP_PLUGIN ON "")
 OPTION(BUILD_ROS_INTERFACE ON "")
 
 LIST(APPEND PKG_CONFIG_ADDITIONAL_VARIABLES cmake_plugin)
 
-SETUP_PROJECT()
 FINDPYTHON(REQUIRED)
 
 # Activate hpp-util logging if requested
@@ -63,8 +67,8 @@ IF(BUILD_HPP_PLUGIN)
 endif(BUILD_HPP_PLUGIN)
 
 ADD_REQUIRED_DEPENDENCY("omniORB4")
-ADD_REQUIRED_DEPENDENCY("hpp-corbaserver")
-ADD_REQUIRED_DEPENDENCY("hpp-manipulation-corba")
+ADD_PROJECT_DEPENDENCY("hpp-corbaserver")
+ADD_PROJECT_DEPENDENCY("hpp-manipulation-corba")
 
 ADD_SUBDIRECTORY(src)
 

@@ -1,7 +1,7 @@
 SET(LIBRARY_NAME ${PROJECT_NAME})
 
 INCLUDE(${HPP_CORBASERVER_CMAKE_PLUGIN})
-INCLUDE(${HPP_CORBASERVER_DATAROOTDIR}/hpp-corbaserver/cmake/omniidl.cmake)
+INCLUDE(${HPP_CORBASERVER_OMNIIDL_CMAKE})
 OMNIIDL_INCLUDE_DIRECTORIES(
   ${CMAKE_SOURCE_DIR}/idl ${HPP_CORBASERVER_DATAROOTDIR}/idl
   )
@@ -50,7 +50,8 @@ IF(BUILD_HPP_PLUGIN)
     discretization.cc
     ${ALL_IDL_CPP_STUBS}
     ${ALL_IDL_CPP_IMPL_STUBS}
-    PKG_CONFIG_DEPENDENCIES omniORB4 hpp-corbaserver roscpp dynamic_graph_bridge_msgs)
+    LINK_DEPENDENCIES PUBLIC hpp-corbaserver::hpp-corbaserver
+    PKG_CONFIG_DEPENDENCIES omniORB4 roscpp dynamic_graph_bridge_msgs)
 
   ADD_DEPENDENCIES (agimus-hpp generate_idl_cpp generate_idl_python)
 ELSE(BUILD_HPP_PLUGIN)
