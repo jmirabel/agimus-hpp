@@ -22,7 +22,7 @@ INCLUDE(cmake/base.cmake)
 INCLUDE(cmake/python.cmake)
 INCLUDE(cmake/idl.cmake)
 
-SET(PROJECT_NAME agimus_hpp)
+SET(PROJECT_NAME agimus-hpp)
 SET(PROJECT_DESCRIPTION "Package to link HPP to the Agimus framework")
 SET(PROJECT_URL "")
 

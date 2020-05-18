@@ -1,5 +1,5 @@
 <package format="2">
-  <name>agimus_hpp</name>
+  <name>agimus-hpp</name>
   <version>0.0.0</version>
   <description>Package to link HPP to the Agimus framework</description>
   <maintainer email="hpp@laas.fr">Joseph Mirabel</maintainer>
