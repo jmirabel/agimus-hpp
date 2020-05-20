@@ -25,7 +25,6 @@ module hpp
   }; // module agimus
 }; // module hpp
 
-//* #include "../src/discretization.hh"
 //* #include <hpp/agimus_idl/discretization-idl.hh>
 
 #include <hpp/agimus_idl/discretization.idl>

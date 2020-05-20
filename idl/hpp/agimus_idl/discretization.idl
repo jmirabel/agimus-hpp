@@ -35,7 +35,7 @@ module hpp
       const long Derivative            = 2;
       const long PositionAndDerivative = 3;
       void    compute (in value_type time) raises (Error);
-      boolean addCenterOfMass (in string name, in pinocchio_idl::CenterOfMassComputation time, in long option) raises (Error);
+      boolean addCenterOfMass (in string name, in pinocchio_idl::CenterOfMassComputation com, in long option) raises (Error);
       boolean addOperationalFrame (in string name, in long option) raises (Error);
       void    resetTopics () raises (Error);
       void    setJointNames (in Names_t names) raises (Error);
@@ -51,7 +51,7 @@ module hpp
 }; // module agimus
 //* #include <hpp/core/path.hh>
 //* #include <hpp/core/path-vector.hh>
-//* #include "../src/discretization.hh"
+//* #include <hpp/agimus/discretization.hh>
 //* #include <hpp/core_idl/paths-idl.hh>
 
 #endif // HPP_AGIMUS_IDL_DISCRETIZATION_IDL

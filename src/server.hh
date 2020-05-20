@@ -30,7 +30,7 @@
 
 # include <hpp/agimus_idl/server-idl.hh>
 # include <hpp/agimus_idl/discretization-idl.hh>
-# include "discretization.hh"
+# include <hpp/agimus/discretization.hh>
 
 namespace hpp {
   namespace agimus {

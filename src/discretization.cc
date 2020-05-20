@@ -17,7 +17,7 @@
 // License along with agimus-hpp.  If not, see
 // <http://www.gnu.org/licenses/>.
 
-#include "discretization.hh"
+#include <hpp/agimus/discretization.hh>
 
 #include <pinocchio/algorithm/frames.hpp>
 #include <hpp/util/timer.hh>

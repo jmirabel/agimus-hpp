@@ -17,8 +17,8 @@
 // License along with agimus-hpp.  If not, see
 // <http://www.gnu.org/licenses/>.
 
-#ifndef HPP_CORE_DISCRETIZATION_HH
-#define HPP_CORE_DISCRETIZATION_HH
+#ifndef HPP_AGIMUS_DISCRETIZATION_HH
+#define HPP_AGIMUS_DISCRETIZATION_HH
 
 #include <hpp/util/pointer.hh>
 #include <hpp/pinocchio/device.hh>
@@ -144,4 +144,4 @@ namespace hpp {
   } // namespace agimus
 } // namespace hpp
 
-#endif // HPP_CORE_DISCRETIZATION_HH
+#endif // HPP_AGIMUS_DISCRETIZATION_HH

@@ -26,7 +26,7 @@
 
 #include "hpp/agimus_idl/discretization.hh"
 
-#include "discretization.hh"
+#include <hpp/agimus/discretization.hh>
 
 namespace hpp {
   namespace agimus {
