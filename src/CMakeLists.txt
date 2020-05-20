@@ -17,8 +17,10 @@ FOREACH(IDL server discretization)
     ARGUMENTS
     -Wbmodules=hpp_idl
     -Wbextern=common:hpp_stubs
+    -Wbextern=constraints:hpp_stubs.constraints
     -Wbextern=robots:hpp_stubs.pinocchio
     -Wbextern=paths:hpp_stubs.core
+    -Wbextern=_constraints:hpp_stubs.core
     )
 ENDFOREACH()
 
