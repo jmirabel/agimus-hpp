@@ -1,20 +1,20 @@
 <launch>
   <arg name="machine" default="" />
   <group ns="agimus/hpp" if="$(eval machine == '')">
-    <node name="hpp_node" pkg="agimus_hpp" type="hpp_node.py"
+    <node name="hpp_node" pkg="agimus-hpp" type="hpp_node.py"
       args="hpp-manipulation-server" respawn="true"
       output="screen" />
-    <node name="hpp_estimation" pkg="agimus_hpp" type="estimation.py"
+    <node name="hpp_estimation" pkg="agimus-hpp" type="estimation.py"
       args="--continuous-estimation"
       output="screen" />
   </group>
 
   <group ns="agimus/hpp" unless="$(eval machine == '')">
-    <node name="hpp_node" pkg="agimus_hpp" type="hpp_node.py"
+    <node name="hpp_node" pkg="agimus-hpp" type="hpp_node.py"
       args="hpp-manipulation-server" respawn="true"
       machine="$(arg machine)"
       output="screen" />
-    <node name="hpp_estimation" pkg="agimus_hpp" type="estimation.py"
+    <node name="hpp_estimation" pkg="agimus-hpp" type="estimation.py"
       args="--continuous-estimation --estimation-rate 5"
       machine="$(arg machine)"
       output="screen" />
