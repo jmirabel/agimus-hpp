@@ -61,19 +61,19 @@ IF(BUILD_ROS_INTERFACE)
 
   catkin_package()
 
-  ADD_REQUIRED_DEPENDENCY("agimus_sot_msgs")
+  ADD_PROJECT_DEPENDENCY("agimus_sot_msgs")
 ELSE(BUILD_ROS_INTERFACE)
-  ADD_REQUIRED_DEPENDENCY("geometry_msgs")
+  ADD_PROJECT_DEPENDENCY("geometry_msgs")
 ENDIF(BUILD_ROS_INTERFACE)
 
 IF(BUILD_HPP_PLUGIN)
-  ADD_REQUIRED_DEPENDENCY("roscpp")
-  ADD_REQUIRED_DEPENDENCY("dynamic_graph_bridge_msgs")
+  ADD_PROJECT_DEPENDENCY("roscpp")
+  ADD_PROJECT_DEPENDENCY("dynamic_graph_bridge_msgs")
 endif(BUILD_HPP_PLUGIN)
 
-ADD_REQUIRED_DEPENDENCY("omniORB4")
-ADD_REQUIRED_DEPENDENCY("hpp-corbaserver")
-ADD_REQUIRED_DEPENDENCY("hpp-manipulation-corba")
+ADD_PROJECT_DEPENDENCY("omniORB4")
+ADD_PROJECT_DEPENDENCY("hpp-corbaserver")
+ADD_PROJECT_DEPENDENCY("hpp-manipulation-corba")
 
 ADD_SUBDIRECTORY(src)
 
