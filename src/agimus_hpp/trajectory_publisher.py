@@ -119,7 +119,7 @@ class HppOutputQueue(HppClient):
     def _ros_shutdown(self):
         if self.discretization is not None:
             self.discretization.shutdownRos()
-            self.hpptools().deleteServantFromObject (self.discretization)
+            self.discretization.deleteThis()
 
     def resetTopics (self, msg = None):
         self.hpp()
@@ -133,46 +133,58 @@ class HppOutputQueue(HppClient):
         try:
             hpp = self.hpp()
             comcomp = hpp.robot.getCenterOfMassComputation (req.value)
-            self.discretization.addCenterOfMass (req.value, comcomp, Discretization.Position)
+            success = self.discretization.addCenterOfMass (req.value, comcomp, Discretization.Position)
             self.hpptools().deleteServantFromObject (comcomp)
         except Exception as e:
+            success = False
+        if success:
+            rospy.loginfo("Add COM position topic " + req.value)
+            return True
+        else:
             rospy.logerr("Could not add COM position: " + str(e))
             return False
-        rospy.loginfo("Add COM position topic " + req.value)
-        return True
 
     def addCenterOfMassVelocity (self, req):
         from hpp_idl.hpp.agimus_idl import Discretization
         try:
             hpp = self.hpp()
             comcomp = hpp.robot.getCenterOfMassComputation (req.value)
-            self.discretization.addCenterOfMass (req.value, comcomp, Discretization.Derivative)
+            success = self.discretization.addCenterOfMass (req.value, comcomp, Discretization.Derivative)
             self.hpptools().deleteServantFromObject (comcomp)
         except Exception as e:
+            success = False
+        if success:
+            rospy.loginfo("Add COM velocity topic " + req.value)
+            return True
+        else:
             rospy.logerr("Could not add COM velocity: " + str(e))
             return False
-        rospy.loginfo("Add COM velocity topic " + req.value)
-        return True
 
     def addOperationalFrame (self, req):
         from hpp_idl.hpp.agimus_idl import Discretization
         try:
-            self.discretization.addOperationalFrame (req.value, Discretization.Position)
+            success = self.discretization.addOperationalFrame (req.value, Discretization.Position)
         except Exception as e:
+            success = False
+        if success:
+            rospy.loginfo("Add operational frame pose topic " + req.value)
+            return True
+        else:
             rospy.logerr("Could not add operational frame pose {}: {}".format(req.value, e))
             return False
-        rospy.loginfo("Add operational frame pose topic " + req.value)
-        return True
 
     def addOperationalFrameVelocity (self, req):
         from hpp_idl.hpp.agimus_idl import Discretization
         try:
-            self.discretization.addOperationalFrame (req.value, Discretization.Derivative)
+            success = self.discretization.addOperationalFrame (req.value, Discretization.Derivative)
         except Exception as e:
+            success = False
+        if success:
+            rospy.loginfo("Add operational frame velocity topic " + req.value)
+            return True
+        else:
             rospy.logerr("Could not add operational frame velocity {}: {}".format(req.value, e))
             return False
-        rospy.loginfo("Add operational frame velocity topic " + req.value)
-        return True
 
     def setJointNames (self, req):
         try:
