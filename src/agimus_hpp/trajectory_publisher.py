@@ -104,7 +104,7 @@ class HppOutputQueue(HppClient):
         super(HppOutputQueue, self)._connect ()
         from hpp.corbaserver.tools import loadServerPlugin
         loadServerPlugin (self.context, "agimus-hpp.so")
-        from hpp.agimus import Client
+        from agimus_hpp.plugin import Client
         self._agimus = Client(context=self.context)
         if self.discretization is None:
             self.discretization = self._agimus.server.getDiscretization()

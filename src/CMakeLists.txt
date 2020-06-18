@@ -118,5 +118,5 @@ SET (PYTHON_FILE
     client.py
     __init__.py)
 FOREACH(F ${PYTHON_FILE})
-  PYTHON_INSTALL_ON_SITE("hpp/agimus" ${F})
+  PYTHON_INSTALL_ON_SITE("agimus_hpp/plugin" ${F})
 ENDFOREACH()
