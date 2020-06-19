@@ -61,30 +61,32 @@ GENERATE_IDL_CPP_IMPL (hpp/agimus_idl/discretization ${CMAKE_SOURCE_DIR}/idl/hpp
 INSTALL(DIRECTORY ${CMAKE_SOURCE_DIR}/idl/hpp/agimus_idl
   DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/idl/hpp)
 
+SET(PYTHON_INSTALL_DIR "/tmp/python" CACHE FILEPATH "Path where python files are installed")
+
 INSTALL(
   DIRECTORY
   ${CMAKE_CURRENT_BINARY_DIR}/hpp_idl/hpp/agimus_idl
-  DESTINATION ${PYTHON_SITELIB}/agimus_idl/hpp/)
+  DESTINATION ${PYTHON_INSTALL_DIR}/agimus_idl/hpp/)
 
 INSTALL(
   FILES
   ${CMAKE_CURRENT_BINARY_DIR}/hpp_idl/__init__.py
-  DESTINATION ${PYTHON_SITELIB}/agimus_idl)
+  DESTINATION ${PYTHON_INSTALL_DIR}/agimus_idl)
 
 INSTALL(
   FILES
   ${CMAKE_CURRENT_BINARY_DIR}/hpp_idl/hpp/__init__.py
-  DESTINATION ${PYTHON_SITELIB}/agimus_idl/hpp)
+  DESTINATION ${PYTHON_INSTALL_DIR}/agimus_idl/hpp)
 
 INSTALL(
   DIRECTORY
   ${CMAKE_CURRENT_BINARY_DIR}/hpp_stubs/agimus
-  DESTINATION ${PYTHON_SITELIB}/agimus_stubs)
+  DESTINATION ${PYTHON_INSTALL_DIR}/agimus_stubs)
 
 INSTALL(
   FILES
   ${CMAKE_CURRENT_BINARY_DIR}/hpp_stubs/__init__.py
-  DESTINATION ${PYTHON_SITELIB}/agimus_stubs)
+  DESTINATION ${PYTHON_INSTALL_DIR}/agimus_stubs)
 
 ADD_CUSTOM_TARGET(generate_idl_cpp DEPENDS ${ALL_IDL_CPP_STUBS} ${ALL_IDL_CPP_IMPL_STUBS})
 ADD_CUSTOM_TARGET(generate_idl_python DEPENDS ${ALL_IDL_PYTHON_STUBS})
@@ -119,7 +121,7 @@ IF(BUILD_ROS_INTERFACE)
       __init__.py)
 
   FOREACH(F ${PYTHON_FILE})
-    PYTHON_INSTALL_ON_SITE("agimus_hpp" ${F})
+    PYTHON_INSTALL("agimus_hpp" ${F} ${PYTHON_INSTALL_DIR})
   ENDFOREACH()
 
   SET (PYTHON_FILE
@@ -127,7 +129,7 @@ IF(BUILD_ROS_INTERFACE)
       __init__.py)
 
   FOREACH(F ${PYTHON_FILE})
-    PYTHON_INSTALL_ON_SITE("agimus_hpp/manipulation" ${F})
+    PYTHON_INSTALL("agimus_hpp/manipulation" ${F} ${PYTHON_INSTALL_DIR})
   ENDFOREACH()
 ENDIF(BUILD_ROS_INTERFACE)
 
@@ -135,5 +137,5 @@ SET (PYTHON_FILE
     client.py
     __init__.py)
 FOREACH(F ${PYTHON_FILE})
-  PYTHON_INSTALL_ON_SITE("agimus_hpp/plugin" ${F})
+  PYTHON_INSTALL("agimus_hpp/plugin" ${F} ${PYTHON_INSTALL_DIR})
 ENDFOREACH()
