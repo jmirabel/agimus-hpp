@@ -43,8 +43,11 @@ if verbose:
 assert success, "Failed to initialize ROS node"
 assert get_node_uri() != None, "HPP ROS node could not be found"
 
+discretization.deleteThis()
 discretization = cl.server.getDiscretization()
 discretization.shutdownRos()
 if verbose:
     print("HPP uri after shutdown: " + str(get_node_uri()))
 assert get_node_uri() == None, "HPP could not be disconnected from ROS"
+
+discretization.deleteThis()
