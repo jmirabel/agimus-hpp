@@ -33,30 +33,31 @@
 #include <hpp/corbaserver/server.hh>
 #include <hpp/corbaserver/servant-base.hh>
 
-#include "hpp/agimus_idl/discretization.hh"
+#include "agimusHpp_idl/discretization.hh"
 
 #include <hpp/agimus/discretization.hh>
 
-namespace hpp {
-  namespace agimus {
+namespace agimusHpp {
+    using namespace hpp;
+
     namespace impl {
-      agimus_idl::Discretization_ptr Server::getDiscretization ()
+      agimusHpp_idl::Discretization_ptr Server::getDiscretization ()
       {
         discretization_ =
           Discretization::create (server_->problemSolver()->robot());
 
-        corbaServer::agimus_impl::Discretization* servant =
-          new corbaServer::agimus_impl::Discretization (server_->parent(),
+        agimusHpp_impl::Discretization* servant =
+          new agimusHpp_impl::Discretization (server_->parent(),
               discretization_);
         servant->persistantStorage(false);
 
-        return corbaServer::makeServant<agimus_idl::Discretization_ptr>
+        return corbaServer::makeServant<agimusHpp_idl::Discretization_ptr>
           (server_->parent(), servant);
       }
 
     } // namespace impl
 
-    ServerPlugin::ServerPlugin (corbaServer::Server* server)
+    ServerPlugin::ServerPlugin (hpp::corbaServer::Server* server)
       : corbaServer::ServerPlugin (server),
       serverImpl_ (NULL)
     {}
@@ -84,7 +85,6 @@ namespace hpp {
       if (name == "server") return serverImpl_->implementation()._this();
       throw std::invalid_argument ("No servant " + name);
     }
-  } // namespace agimus
-} // namespace hpp
+} // namespace agimusHpp
 
-HPP_CORBASERVER_DEFINE_PLUGIN(hpp::agimus::ServerPlugin)
+HPP_CORBASERVER_DEFINE_PLUGIN(agimusHpp::ServerPlugin)

@@ -39,14 +39,13 @@
 #include <ros/init.h>
 #include <ros/publisher.h>
 
-namespace hpp {
-  namespace agimus {
-    typedef pinocchio::value_type value_type;
-    typedef pinocchio::Configuration_t Configuration_t;
-    typedef pinocchio::vector_t vector_t;
-    typedef pinocchio::DevicePtr_t DevicePtr_t;
-    typedef pinocchio::CenterOfMassComputationPtr_t CenterOfMassComputationPtr_t;
-    typedef core::PathPtr_t PathPtr_t;
+namespace agimusHpp {
+    typedef hpp::pinocchio::value_type value_type;
+    typedef hpp::pinocchio::Configuration_t Configuration_t;
+    typedef hpp::pinocchio::vector_t vector_t;
+    typedef hpp::pinocchio::DevicePtr_t DevicePtr_t;
+    typedef hpp::pinocchio::CenterOfMassComputationPtr_t CenterOfMassComputationPtr_t;
+    typedef hpp::core::PathPtr_t PathPtr_t;
 
     HPP_PREDEF_CLASS(Discretization);
     typedef boost::shared_ptr<Discretization> DiscretizationPtr_t;
@@ -150,7 +149,6 @@ namespace hpp {
         };
         std::vector<FrameData> frames_;
     };
-  } // namespace agimus
-} // namespace hpp
+} // namespace agimusHpp
 
 #endif // HPP_AGIMUS_DISCRETIZATION_HH

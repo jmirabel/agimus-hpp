@@ -27,7 +27,7 @@
 # OF THE POSSIBILITY OF SUCH DAMAGE.
 
 from hpp.corbaserver.client import Client as _Parent
-from hpp_idl.hpp.agimus_idl import Server
+from agimusHpp_idl import Server
 
 class Client (_Parent):
   """

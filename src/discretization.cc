@@ -37,23 +37,25 @@
 #include <geometry_msgs/Transform.h>
 #include <dynamic_graph_bridge_msgs/Vector.h>
 
-namespace hpp {
-  namespace agimus {
+namespace agimusHpp {
+    using namespace hpp;
+    namespace pinocchio = hpp::pinocchio;
+
     HPP_DEFINE_TIMECOUNTER(discretization);
 
     static const uint32_t queue_size = 1000;
 
-    void Discretization::COM::compute (pinocchio::DeviceData& d)
+    void Discretization::COM::compute (hpp::pinocchio::DeviceData& d)
     {
       switch (option) {
         case Position:
-          com->compute (d, pinocchio::COM);
+          com->compute (d, hpp::pinocchio::COM);
           break;
         case Derivative:
-          com->compute (d, pinocchio::VELOCITY);
+          com->compute (d, hpp::pinocchio::VELOCITY);
           break;
         case PositionAndDerivative:
-          com->compute (d, pinocchio::COMPUTE_ALL);
+          com->compute (d, hpp::pinocchio::COMPUTE_ALL);
           break;
       }
     }
@@ -104,7 +106,7 @@ namespace hpp {
         throw std::runtime_error ("Could not evaluate the path");
       path_->derivative (v_, time, 1);
 
-      pinocchio::DeviceSync device (device_);
+      hpp::pinocchio::DeviceSync device (device_);
       device.currentConfiguration(q_);
       device.currentVelocity     (v_);
       device.computeFramesForwardKinematics();
@@ -273,5 +275,4 @@ namespace hpp {
       if (handle_) delete handle_;
       handle_ = NULL;
     }
-  } // namespace agimus
-} // namespace hpp
+} // namespace agimusHpp

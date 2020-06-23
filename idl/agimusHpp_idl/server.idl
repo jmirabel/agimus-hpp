@@ -11,19 +11,15 @@
 #ifndef HPP_AGIMUS_IDL_SERVER_IDL
 #define HPP_AGIMUS_IDL_SERVER_IDL
 #include <hpp/common.idl>
-#include <hpp/agimus_idl/discretization.idl>
+#include <agimusHpp_idl/discretization.idl>
 
-module hpp
+module agimusHpp_idl
 {
-  module agimus_idl
+  interface Server
   {
-    interface Server
-    {
-      Discretization getDiscretization () raises (Error);
-    }; // interface Server
-
-  }; // module agimus
-}; // module hpp
+    Discretization getDiscretization () raises (Error);
+  }; // interface Server
+}; // module agimus
 
 //* #include <hpp/agimus_idl/discretization-idl.hh>
 

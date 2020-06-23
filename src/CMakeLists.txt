@@ -34,15 +34,14 @@ OMNIIDL_INCLUDE_DIRECTORIES(
   )
 INCLUDE_DIRECTORIES(${CMAKE_BINARY_DIR}/src)
 
-MAKE_DIRECTORY(${CMAKE_BINARY_DIR}/src/hpp/agimus_idl)
+MAKE_DIRECTORY(${CMAKE_BINARY_DIR}/src/agimusHpp_idl)
 FOREACH(IDL server discretization)
-  GENERATE_IDL_CPP (hpp/agimus_idl/${IDL} ${CMAKE_SOURCE_DIR}/idl/hpp/agimus_idl
+  GENERATE_IDL_CPP (agimusHpp_idl/${IDL} ${CMAKE_SOURCE_DIR}/idl/agimusHpp_idl
     HEADER_SUFFIX -idl.hh)
-  GENERATE_IDL_PYTHON (${IDL} ${CMAKE_SOURCE_DIR}/idl/hpp/agimus_idl
+  GENERATE_IDL_PYTHON (${IDL} ${CMAKE_SOURCE_DIR}/idl/agimusHpp_idl
     ENABLE_DOCSTRING
-    STUBS hpp_stubs.agimus
+    STUBS agimusHpp_stubs
     ARGUMENTS
-    -Wbmodules=hpp_idl
     -Wbextern=common:hpp_stubs
     -Wbextern=constraints:hpp_stubs.constraints
     -Wbextern=robots:hpp_stubs.pinocchio
@@ -51,23 +50,23 @@ FOREACH(IDL server discretization)
     )
 ENDFOREACH()
 
-GENERATE_IDL_CPP_IMPL (hpp/agimus_idl/discretization ${CMAKE_SOURCE_DIR}/idl/hpp/agimus_idl
+GENERATE_IDL_CPP_IMPL (agimusHpp_idl/discretization ${CMAKE_SOURCE_DIR}/idl/agimusHpp_idl
   ARGUMENTS
   -Wbguard_prefix=hpp_agimus_idl
-  -Wbinc_prefix=hpp/agimus_idl
+  -Wbinc_prefix=agimusHpp_idl
   HH_SUFFIX -idl.hh)
 
-INSTALL(DIRECTORY ${CMAKE_SOURCE_DIR}/idl/hpp/agimus_idl
+INSTALL(DIRECTORY ${CMAKE_SOURCE_DIR}/idl/agimusHpp_idl
   DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/idl/hpp)
 
 INSTALL(
   DIRECTORY
-  ${CMAKE_CURRENT_BINARY_DIR}/hpp_idl/hpp/agimus_idl
-  DESTINATION ${PYTHON_SITELIB}/hpp_idl/hpp/)
+  ${CMAKE_CURRENT_BINARY_DIR}/agimusHpp_idl
+  DESTINATION ${PYTHON_SITELIB})
 INSTALL(
   DIRECTORY
-  ${CMAKE_CURRENT_BINARY_DIR}/hpp_stubs/agimus
-  DESTINATION ${PYTHON_SITELIB}/hpp_stubs)
+  ${CMAKE_CURRENT_BINARY_DIR}/agimusHpp_stubs
+  DESTINATION ${PYTHON_SITELIB})
 
 ADD_CUSTOM_TARGET(generate_idl_cpp DEPENDS ${ALL_IDL_CPP_STUBS} ${ALL_IDL_CPP_IMPL_STUBS})
 ADD_CUSTOM_TARGET(generate_idl_python DEPENDS ${ALL_IDL_PYTHON_STUBS})

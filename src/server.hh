@@ -37,16 +37,15 @@
 
 # include <agimus/hpp/config.hh>
 
-# include <hpp/agimus_idl/server-idl.hh>
-# include <hpp/agimus_idl/discretization-idl.hh>
+# include <agimusHpp_idl/server-idl.hh>
+# include <agimusHpp_idl/discretization-idl.hh>
 # include <hpp/agimus/discretization.hh>
 
-namespace hpp {
-  namespace agimus {
+namespace agimusHpp {
     class ServerPlugin;
 
     namespace impl {
-      class Server : public virtual POA_hpp::agimus_idl::Server
+      class Server : public virtual POA_agimusHpp_idl::Server
       {
         public:
           Server () : server_(NULL) {}
@@ -56,7 +55,7 @@ namespace hpp {
             server_ = server;
           }
 
-          agimus_idl::Discretization_ptr getDiscretization ();
+          agimusHpp_idl::Discretization_ptr getDiscretization ();
 
         private:
           ServerPlugin* server_;
@@ -64,10 +63,10 @@ namespace hpp {
       };
     }
 
-    class AGIMUS_HPP_DLLAPI ServerPlugin : public corbaServer::ServerPlugin
+    class AGIMUS_HPP_DLLAPI ServerPlugin : public hpp::corbaServer::ServerPlugin
     {
     public:
-      ServerPlugin (corbaServer::Server* parent);
+      ServerPlugin (hpp::corbaServer::Server* parent);
 
       ~ServerPlugin ();
 
@@ -80,9 +79,8 @@ namespace hpp {
       ::CORBA::Object_ptr servant (const std::string& name) const;
 
     private:
-      corba::Server <impl::Server>* serverImpl_;
+      hpp::corba::Server <impl::Server>* serverImpl_;
     }; // class ServerPlugin
-  } // namespace agimus
-} // namespace hpp
+} // namespace agimusHpp
 
 #endif // HPP_AGIMUS_SERVER_HH
