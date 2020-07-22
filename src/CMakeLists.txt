@@ -42,6 +42,7 @@ FOREACH(IDL server discretization)
     ENABLE_DOCSTRING
     STUBS hpp_stubs.agimus
     ARGUMENTS
+    -Wbinline
     -Wbmodules=hpp_idl
     -Wbextern=common:hpp_stubs
     -Wbextern=constraints:hpp_stubs.constraints
@@ -63,11 +64,27 @@ INSTALL(DIRECTORY ${CMAKE_SOURCE_DIR}/idl/hpp/agimus_idl
 INSTALL(
   DIRECTORY
   ${CMAKE_CURRENT_BINARY_DIR}/hpp_idl/hpp/agimus_idl
-  DESTINATION ${PYTHON_SITELIB}/hpp_idl/hpp/)
+  DESTINATION ${PYTHON_SITELIB}/agimus_idl/hpp/)
+
+INSTALL(
+  FILES
+  ${CMAKE_CURRENT_BINARY_DIR}/hpp_idl/__init__.py
+  DESTINATION ${PYTHON_SITELIB}/agimus_idl)
+
+INSTALL(
+  FILES
+  ${CMAKE_CURRENT_BINARY_DIR}/hpp_idl/hpp/__init__.py
+  DESTINATION ${PYTHON_SITELIB}/agimus_idl/hpp)
+
 INSTALL(
   DIRECTORY
   ${CMAKE_CURRENT_BINARY_DIR}/hpp_stubs/agimus
-  DESTINATION ${PYTHON_SITELIB}/hpp_stubs)
+  DESTINATION ${PYTHON_SITELIB}/agimus_stubs)
+
+INSTALL(
+  FILES
+  ${CMAKE_CURRENT_BINARY_DIR}/hpp_stubs/__init__.py
+  DESTINATION ${PYTHON_SITELIB}/agimus_stubs)
 
 ADD_CUSTOM_TARGET(generate_idl_cpp DEPENDS ${ALL_IDL_CPP_STUBS} ${ALL_IDL_CPP_IMPL_STUBS})
 ADD_CUSTOM_TARGET(generate_idl_python DEPENDS ${ALL_IDL_PYTHON_STUBS})
@@ -118,5 +135,5 @@ SET (PYTHON_FILE
     client.py
     __init__.py)
 FOREACH(F ${PYTHON_FILE})
-  PYTHON_INSTALL_ON_SITE("hpp/agimus" ${F})
+  PYTHON_INSTALL_ON_SITE("agimus_hpp/plugin" ${F})
 ENDFOREACH()

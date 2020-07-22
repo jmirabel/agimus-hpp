@@ -26,8 +26,19 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 # OF THE POSSIBILITY OF SUCH DAMAGE.
 
+def _fix_imports():
+    import agimus_stubs.agimus.server_idl
+    import agimus_stubs.agimus.discretization_idl
+    import hpp_stubs
+    hpp_stubs.agimus = agimus_stubs.agimus
+
+_fix_imports()
+import agimus_idl
+import hpp_idl.hpp
+
+Server = hpp_idl.hpp.agimus_idl.Server
+
 from hpp.corbaserver.client import Client as _Parent
-from hpp_idl.hpp.agimus_idl import Server
 
 class Client (_Parent):
   """
