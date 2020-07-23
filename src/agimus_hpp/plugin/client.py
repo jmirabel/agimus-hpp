@@ -37,6 +37,7 @@ import agimus_idl
 import hpp_idl.hpp
 
 Server = hpp_idl.hpp.agimus_idl.Server
+Discretization = hpp_idl.hpp.agimus_idl.Discretization
 
 from hpp.corbaserver.client import Client as _Parent
 
