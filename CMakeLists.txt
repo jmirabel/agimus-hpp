@@ -65,14 +65,14 @@ IF(BUILD_ROS_INTERFACE)
 
   catkin_package()
 
-  ADD_REQUIRED_DEPENDENCY("agimus_sot_msgs")
+  add_project_dependency("agimus_sot_msgs")
 ELSE(BUILD_ROS_INTERFACE)
   ADD_REQUIRED_DEPENDENCY("geometry_msgs")
 ENDIF(BUILD_ROS_INTERFACE)
 
 IF(BUILD_HPP_PLUGIN)
   ADD_REQUIRED_DEPENDENCY("roscpp")
-  ADD_REQUIRED_DEPENDENCY("dynamic_graph_bridge_msgs")
+  add_project_dependency("dynamic_graph_bridge_msgs")
 endif(BUILD_HPP_PLUGIN)
 
 ADD_REQUIRED_DEPENDENCY("omniORB4")
@@ -89,5 +89,3 @@ IF(BUILD_ROS_INTERFACE)
   INSTALL(DIRECTORY launch
     DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
 ENDIF(BUILD_ROS_INTERFACE)
-
-SETUP_PROJECT_FINALIZE()

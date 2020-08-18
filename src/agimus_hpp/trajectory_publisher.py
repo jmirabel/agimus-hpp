@@ -38,6 +38,8 @@ from geometry_msgs.msg import Vector3, Transform
 from std_msgs.msg import UInt32, Empty
 import std_srvs.srv
 
+from agimus_hpp.plugin.client import Client, Discretization
+
 ## Samples and publishes a path from HPP into several topics
 ##
 ## References to be published are:
@@ -104,7 +106,6 @@ class HppOutputQueue(HppClient):
         super(HppOutputQueue, self)._connect ()
         from hpp.corbaserver.tools import loadServerPlugin
         loadServerPlugin (self.context, "agimus-hpp.so")
-        from hpp.agimus import Client
         self._agimus = Client(context=self.context)
         if self.discretization is None:
             self.discretization = self._agimus.server.getDiscretization()
@@ -129,7 +130,6 @@ class HppOutputQueue(HppClient):
             return std_srvs.srv.EmptyResponse()
 
     def addCenterOfMass (self, req):
-        from hpp_idl.hpp.agimus_idl import Discretization
         try:
             hpp = self.hpp()
             comcomp = hpp.robot.getCenterOfMassComputation (req.value)
@@ -145,7 +145,6 @@ class HppOutputQueue(HppClient):
             return False
 
     def addCenterOfMassVelocity (self, req):
-        from hpp_idl.hpp.agimus_idl import Discretization
         try:
             hpp = self.hpp()
             comcomp = hpp.robot.getCenterOfMassComputation (req.value)
@@ -161,7 +160,6 @@ class HppOutputQueue(HppClient):
             return False
 
     def addOperationalFrame (self, req):
-        from hpp_idl.hpp.agimus_idl import Discretization
         try:
             success = self.discretization.addOperationalFrame (req.value, Discretization.Position)
         except Exception as e:
@@ -174,7 +172,6 @@ class HppOutputQueue(HppClient):
             return False
 
     def addOperationalFrameVelocity (self, req):
-        from hpp_idl.hpp.agimus_idl import Discretization
         try:
             success = self.discretization.addOperationalFrame (req.value, Discretization.Derivative)
         except Exception as e:
