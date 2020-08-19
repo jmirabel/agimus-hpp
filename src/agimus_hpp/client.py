@@ -38,9 +38,18 @@ import hpp.gepetto.manipulation
 #
 # It handles connection with hppcorbaserver
 class HppClient(object):
-    def __init__ (self, context = "corbaserver"):
+    def __init__ (self, context = "corbaserver", connect = True):
         self.context = context
-        self.setHppUrl()
+        if connect:
+            self._connect()
+
+    def tryConnect(self):
+        try:
+            self._connect()
+            self._hppclient.problem.getAvailable("type")
+            return True, ""
+        except CORBA.TRANSIENT as err:
+            return False, "Could not connect to HPP: " + str(err)
 
     def setHppUrl (self):
         self._connect()
