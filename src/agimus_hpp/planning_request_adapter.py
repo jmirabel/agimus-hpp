@@ -83,13 +83,12 @@ class PlanningRequestAdapter(HppClient):
     modes = [ "current", "estimated", "user_defined" ]
 
     def __init__ (self, topicStateFeedback):
-        super(PlanningRequestAdapter, self).__init__ ()
+        super(PlanningRequestAdapter, self).__init__ (connect=False)
         self.subscribers = ros_tools.createSubscribers (self, "/agimus", self.subscribersDict)
         self.publishers = ros_tools.createPublishers ("/agimus", self.publishersDict)
 
         self.topicStateFeedback = topicStateFeedback
         self.topicEstimation = "/agimus/estimation/semantic"
-        self.setHppUrl()
         self.q_init = None
         self.init_mode = "user_defined"
         self.get_current_state = None

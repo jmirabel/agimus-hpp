@@ -76,6 +76,13 @@ class HppClient(object):
     ## Get the hppcorbaserver client.
     ## It handles reconnection if needed.
     def hpp (self, reconnect = True):
+        if not hasattr(self, "_hppclient"):
+            if reconnect:
+                self._connect()
+                reconnect = False
+            else:
+                rospy.loginfo("Not connected to hpp")
+                raise RuntimeError("Not connected to hpp")
         try:
             self._hppclient.problem.getAvailable("type")
         except (CORBA.TRANSIENT, CORBA.COMM_FAILURE) as e:
