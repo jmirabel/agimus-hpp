@@ -87,14 +87,12 @@ class HppOutputQueue(HppClient):
         self.discretization = None
         rospy.on_shutdown (self._ros_shutdown)
 
-        super(HppOutputQueue, self).__init__ ()
+        super(HppOutputQueue, self).__init__ (connect=False)
 
         ## Publication frequency
         self.dt = rospy.get_param ("/sot_controller/dt")
         self.frequency = 1. / self.dt # Hz
 
-        self.resetTopics ()
-        self.setJointNames (SetJointNamesRequest(self.hpp().robot.getJointNames()))
 
         self.subscribers = ros_tools.createSubscribers (self, "", self.subscribersDict)
         self.services = ros_tools.createServices (self, "", self.servicesDict)

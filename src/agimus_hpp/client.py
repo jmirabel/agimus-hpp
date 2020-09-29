@@ -38,9 +38,18 @@ import hpp.gepetto.manipulation
 #
 # It handles connection with hppcorbaserver
 class HppClient(object):
-    def __init__ (self, context = "corbaserver"):
+    def __init__ (self, context = "corbaserver", connect = True):
         self.context = context
-        self.setHppUrl()
+        if connect:
+            self._connect()
+
+    def tryConnect(self):
+        try:
+            self._connect()
+            self._hppclient.problem.getAvailable("type")
+            return True, ""
+        except CORBA.TRANSIENT as err:
+            return False, "Could not connect to HPP: " + str(err)
 
     def setHppUrl (self):
         self._connect()
@@ -67,6 +76,13 @@ class HppClient(object):
     ## Get the hppcorbaserver client.
     ## It handles reconnection if needed.
     def hpp (self, reconnect = True):
+        if not hasattr(self, "_hppclient"):
+            if reconnect:
+                self._connect()
+                reconnect = False
+            else:
+                rospy.loginfo("Not connected to hpp")
+                raise RuntimeError("Not connected to hpp")
         try:
             self._hppclient.problem.getAvailable("type")
         except (CORBA.TRANSIENT, CORBA.COMM_FAILURE) as e:
