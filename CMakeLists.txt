@@ -36,9 +36,12 @@ SET(PROJECT_USE_KEYWORD_LINK_LIBRARIES TRUE)
 INCLUDE(cmake/base.cmake)
 INCLUDE(cmake/python.cmake)
 INCLUDE(cmake/idl.cmake)
+INCLUDE(cmake/cxx-standard.cmake)
 
 COMPUTE_PROJECT_ARGS(PROJECT_ARGS LANGUAGES CXX)
 project(${PROJECT_NAME} ${PROJECT_ARGS})
+
+CHECK_MINIMAL_CXX_STANDARD(11)
 
 OPTION(BUILD_HPP_PLUGIN ON "")
 OPTION(BUILD_ROS_INTERFACE ON "")
@@ -55,7 +58,6 @@ ENDIF()
 
 IF(BUILD_ROS_INTERFACE)
   find_package(catkin REQUIRED COMPONENTS
-    dynamic_graph_bridge_msgs
     geometry_msgs
     sensor_msgs
     agimus_sot_msgs
@@ -66,13 +68,14 @@ IF(BUILD_ROS_INTERFACE)
   catkin_package()
 
   add_project_dependency("agimus_sot_msgs")
+  add_project_dependency("dynamic_graph_bridge_msgs")
 ELSE(BUILD_ROS_INTERFACE)
   ADD_REQUIRED_DEPENDENCY("geometry_msgs")
 ENDIF(BUILD_ROS_INTERFACE)
 
 IF(BUILD_HPP_PLUGIN)
   ADD_REQUIRED_DEPENDENCY("roscpp")
-  add_project_dependency("dynamic_graph_bridge_msgs")
+  add_required_dependency("dynamic_graph_bridge_msgs")
 endif(BUILD_HPP_PLUGIN)
 
 ADD_REQUIRED_DEPENDENCY("omniORB4")
