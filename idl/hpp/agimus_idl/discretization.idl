@@ -52,6 +52,7 @@ module hpp
 //* #include <hpp/core/path.hh>
 //* #include <hpp/core/path-vector.hh>
 //* #include <hpp/agimus/discretization.hh>
-//* #include <hpp/core_idl/paths-idl.hh>
+//* #include <hpp/pinocchio_idl/robots-fwd.hh>
+//* #include <hpp/core_idl/paths-fwd.hh>
 
 #endif // HPP_AGIMUS_IDL_DISCRETIZATION_IDL
