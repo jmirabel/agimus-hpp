@@ -34,7 +34,7 @@ from agimus_sot_msgs.srv import *
 import agimus_hpp.ros_tools as ros_tools
 from .tools import *
 from dynamic_graph_bridge_msgs.msg import Vector
-from geometry_msgs.msg import Vector3, Transform
+from geometry_msgs.msg import Vector3, Pose
 from std_msgs.msg import UInt32, Empty
 import std_srvs.srv
 
@@ -79,6 +79,8 @@ class HppOutputQueue(HppClient):
 
                     "publish_first": [ std_srvs.srv.Trigger, "publishFirst", ],
                     "get_queue_size": [ GetInt, "getQueueSize", ],
+
+                    "get_base_pose_at_param": [ GetBasePoseAtParam, "getBasePoseAtParam" ],
                     }
                 }
             }
@@ -266,3 +268,18 @@ class HppOutputQueue(HppClient):
     #        This information could also be returned by read and readSub.
     def getQueueSize (self, empty):
         return len(self.times)
+
+    def getBasePoseAtParam (self, req):
+        hpp = self.hpp()
+        q = hpp.problem.configAtParam(req.pathId, req.param)
+        root_joint_name = hpp.robot.getJointNames()[0]
+        M = hpp.robot.getJointsPosition(q, [ root_joint_name, ])
+        Mros = Pose ()
+        Mros.position.x = M[0]
+        Mros.position.y = M[1]
+        Mros.position.z = M[2]
+        Mros.orientation.x = M[3]
+        Mros.orientation.y = M[4]
+        Mros.orientation.z = M[5]
+        Mros.orientation.w = M[6]
+        return Mros
