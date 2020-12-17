@@ -49,7 +49,7 @@ namespace hpp {
     typedef core::PathPtr_t PathPtr_t;
 
     HPP_PREDEF_CLASS(Discretization);
-    typedef boost::shared_ptr<Discretization> DiscretizationPtr_t;
+    typedef shared_ptr<Discretization> DiscretizationPtr_t;
 
     class Discretization
     {
