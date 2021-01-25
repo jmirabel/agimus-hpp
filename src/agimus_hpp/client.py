@@ -69,6 +69,9 @@ class HppClient(object):
             self.problemSolver = hpp.corbaserver.ProblemSolver(self.robot)
         rospy.loginfo("Connected to hpp")
 
+    def _disconnect(self):
+        delattr(self, "_hppclient")
+
     ## \deprecated Use HppClient.hpp instead.
     def _hpp (self, reconnect = True):
         return self.hpp (reconnect)

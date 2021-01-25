@@ -160,15 +160,17 @@ class HppOutputQueue(HppClient):
             return False
 
     def addOperationalFrame (self, req):
+        err=""
         try:
             success = self.discretization.addOperationalFrame (req.value, Discretization.Position)
         except Exception as e:
             success = False
+            err = str(e)
         if success:
             rospy.loginfo("Add operational frame pose topic " + req.value)
             return True
         else:
-            rospy.logerr("Could not add operational frame pose {}: {}".format(req.value, e))
+            rospy.logerr("Could not add operational frame pose {}: {}".format(req.value, err))
             return False
 
     def addOperationalFrameVelocity (self, req):
@@ -184,11 +186,16 @@ class HppOutputQueue(HppClient):
             return False
 
     def setJointNames (self, req):
+        import CORBA
         try:
             hpp = self.hpp()
             # TODO at the moment, the root joint is considered to be always added.
             names = [ n for n in req.names if "root_joint" not in n ]
             self.discretization.setJointNames (names)
+        except CORBA.Exception as e:
+            rospy.logerr("Could not set joint names: {}\nResetting connection to HPP.".format(e))
+            self._disconnect()
+            return False
         except Exception as e:
             rospy.logerr("Could not set joint names: " + str(e))
             return False
