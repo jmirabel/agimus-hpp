@@ -280,7 +280,7 @@ class HppOutputQueue(HppClient):
         hpp = self.hpp()
         q = hpp.problem.configAtParam(req.pathId, req.param)
         root_joint_name = hpp.robot.getJointNames()[0]
-        M = hpp.robot.getJointsPosition(q, [ root_joint_name, ])
+        M, = hpp.robot.getJointsPosition(q, [ root_joint_name, ])
         Mros = Pose ()
         Mros.position.x = M[0]
         Mros.position.y = M[1]
